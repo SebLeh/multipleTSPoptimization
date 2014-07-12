@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Express 2013 for Windows Desktop
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "multipleTSP", "multipleTSP\multipleTSP.csproj", "{15771572-1E30-40DD-97A5-E01D4F565B90}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{15771572-1E30-40DD-97A5-E01D4F565B90}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15771572-1E30-40DD-97A5-E01D4F565B90}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15771572-1E30-40DD-97A5-E01D4F565B90}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15771572-1E30-40DD-97A5-E01D4F565B90}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
