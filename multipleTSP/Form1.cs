@@ -40,7 +40,8 @@ namespace multipleTSP
 
         public void paint(object sender, PaintEventArgs e)
         {
-
+            gv_totalLength = 0;
+            gv_avgLength = 0;
             var p = sender as Panel;
             var g = e.Graphics;
 
@@ -56,7 +57,14 @@ namespace multipleTSP
                 {
                     g.DrawPolygon(blackPen, allTours[i]);
                 }
+                gv_totalLength += evaluation.evalTour(allTours[i]);
             }
+            gv_avgLength = gv_totalLength / gv_tours;
+            if (gv_totalLength != 0)
+            {
+                gui_avgLength.Text = gv_avgLength.ToString();
+            }
+            gui_totalLength.Text = gv_totalLength.ToString();
 
         }
 
@@ -131,6 +139,7 @@ namespace multipleTSP
         private void button_generate_Click(object sender, EventArgs e)
         {
             paintPanel.Cursor = System.Windows.Forms.Cursors.Arrow;
+            generate newTour = new generate();
             try
             {
                 gv_points = int.Parse(gui_points.Text);
@@ -163,6 +172,7 @@ namespace multipleTSP
                     gv_avgLength = 0;
                     //localGo.Enabled = true;
                     //evoGo.Enabled = true;
+                    allTours = newTour.random(gv_points, gv_tours, new Point(paintPanel.Width, paintPanel.Height), mid);
                     this.Refresh();
                 }
             //}
@@ -361,5 +371,173 @@ namespace multipleTSP
             allTours[gv_draw_counter] = new Point[] { mid };
         }
 
+        private void button_localOpt_Click(object sender, EventArgs e)
+        {
+            localOptimization localOpt = new localOptimization(gv_points);
+            for (int i = 0; i < allTours.Length; i++)
+            {
+                Point[] newTour = localOpt.tour2opt(allTours[i]);
+                //if (evaluation.evalTour(newTour) < evaluation.evalTour(allTours[i]))
+                //{
+                allTours[i] = newTour;
+                //}
+            }
+            this.Refresh();
+        }
+    }
+
+    public class generate
+    {
+        public Point[][] random(int points, int tours, Point max, Point mid)
+        {
+            Point[][] randomTour = new Point[0][];
+            Random pointRandom = new Random();
+
+            for (int i = 0; i < tours; i++)
+            {
+                Array.Resize(ref randomTour, randomTour.Length + 1);
+                randomTour[i] = new Point[1];
+                randomTour[i][0] = mid;
+                for (int j = 1; j <= points; j++)
+                {
+                    bool rnd = true;
+                    Array.Resize(ref randomTour[i], randomTour[i].Length + 1);
+                    while (rnd)
+                    {
+                        rnd = false;
+                        Point newPoint = new Point();
+                        newPoint.X = pointRandom.Next(0, max.X);
+                        newPoint.Y = pointRandom.Next(0, max.Y);
+                        if (newPoint == mid)
+                        {
+                            rnd = true;
+                        }
+                        if (contains(randomTour, newPoint))
+                        {
+                            rnd = true;
+                        }
+                        randomTour[i][j] = newPoint;
+                    }
+                }
+            }
+
+
+                return randomTour;
+        }
+
+        private bool contains(Point[][] newTour, Point newPoint)
+        {
+            for (int i = 0; i < newTour.Length; i++)
+            {
+                for (int j = 0; j < newTour[i].Length; j++)
+                {
+                    if (newTour[i][j] == newPoint)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+    }
+
+    public class localOptimization
+    {
+        int points;
+        public localOptimization(int points){
+            this.points = points;
+        }
+
+        public Point[] tour2opt(Point[] singleTour)
+        {
+            int k = 0;
+            while (k < ( points * 10 ))
+            {
+                //for (int i = 0; i < singleTour.Length; i++)
+                //{
+                Point[] newTour = newNeighbor2opt(singleTour);
+                double eval_new = evaluation.evalTour(newTour);
+                double eval_old = evaluation.evalTour(singleTour);
+                if (eval_new < eval_old)
+                {
+                    singleTour = newTour;
+                    k = 0;
+                    //break;
+                }
+                else 
+                {
+                    k++;
+                }
+                //}
+            }
+
+            return singleTour;
+        }
+
+        public Point[] newNeighbor2opt (Point[] singleTour)
+        {
+            Point[] newTour = new Point[singleTour.Length];
+
+            int rndIndexA = 0;
+            int rndIndexB = 0;
+            Random intRandom = new Random();
+
+            Array.Copy(singleTour, newTour, singleTour.Length);
+            rndIndexA = intRandom.Next(0, singleTour.Length - 1);
+
+            bool rnd = true;
+            while (rnd)
+            {
+                rnd = false;
+                rndIndexB = intRandom.Next(0, singleTour.Length - 1);
+                if (rndIndexA == rndIndexB)
+                {
+                    rnd = true;
+                }
+                if (rndIndexA + 1 == rndIndexB | rndIndexA - 1 == rndIndexB)
+                {
+                    rnd = true;
+                }
+            }
+            //now invert array between A+1 and B-1 / B+1 and A-1
+            if (rndIndexA < rndIndexB)
+            {
+                Array.Reverse(newTour, rndIndexA + 1, (rndIndexB - rndIndexA - 1));
+            }
+            else
+            {
+                Array.Reverse(newTour, rndIndexB + 1, (rndIndexA - rndIndexB - 1));
+            }
+
+            return newTour;
+        }
+
+        public Point[] newNeighbor3opt(Point[] singleTour)
+        {
+            Point[] newTour = new Point[singleTour.Length];
+
+            return newTour;
+        }
+
+        public bool isBetter(Point[] oldTour, Point[] newTour)
+        {
+
+            return true;
+        }
+    }
+
+    public class evaluation
+    {
+        public static double evalTour(Point[] singleTour)
+        {
+            double length = 0;
+
+            for (int i = 0; i < singleTour.Length - 1; i++)
+            {
+                length += Math.Sqrt(Math.Pow(singleTour[i].X - singleTour[i + 1].X, 2) + Math.Pow(singleTour[i].Y - singleTour[i + 1].Y, 2));
+            }
+
+                return length;
+        }
     }
 }
