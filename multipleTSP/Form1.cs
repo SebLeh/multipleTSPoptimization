@@ -21,6 +21,10 @@ namespace multipleTSP
         double gv_totalLength = 0;
         double gv_avgLength = 0;
 
+        int[][] positionMatrix = new int[0][];
+        Point[] allPoints = new Point[1];
+        double[][] distanceMatrix = new double[0][];
+
         Boolean drawMode = false;
 
         public multipleTSP()
@@ -33,8 +37,11 @@ namespace multipleTSP
             mid.X = paintPanel.Width / 2;
             mid.Y = paintPanel.Height / 2;
             allTours[0] = new Point[] { mid };
+            allPoints[0] = new Point(mid.X, mid.Y);
 
             gv_draw_counter = 0;
+
+            allPoints[0] = mid;
 
         }
 
@@ -74,6 +81,10 @@ namespace multipleTSP
             {
                 Array.Resize(ref allTours[gv_draw_counter], allTours[gv_draw_counter].Length + 1);
                 allTours[gv_draw_counter][allTours[gv_draw_counter].Length - 1] = paintPanel.PointToClient(Cursor.Position);
+
+                Array.Resize(ref allPoints, allPoints.Length + 1);
+                allPoints[allPoints.Length - 1] = allTours[gv_draw_counter][allTours[gv_draw_counter].Length - 1];
+
                 this.Refresh();
             }
             else
@@ -95,11 +106,19 @@ namespace multipleTSP
             gv_avgLength = 0;
             gv_totalLength = 0;
             button_generate.Enabled = true;
+            draw_button.Enabled = true;
+            button_localOpt.Enabled = false;
             Array.Resize(ref allTours, 0);
             this.Refresh();
 
             Array.Resize(ref allTours, 1);
             Array.Resize(ref allTours[0], 1);
+            Array.Resize(ref positionMatrix, 0);
+            //Array.Resize(ref positionMatrix[0], 1);
+            Array.Resize(ref distanceMatrix, 0);
+            //Array.Resize(ref distanceMatrix[0], 1);
+            Array.Resize(ref allPoints, 1);
+            //Array.Resize(ref points[0], 0);
             allTours[0] = new Point[] { mid };
             gv_draw_counter = 0;
         }
@@ -138,6 +157,7 @@ namespace multipleTSP
 
         private void button_generate_Click(object sender, EventArgs e)
         {
+            draw_button.Enabled = false;
             paintPanel.Cursor = System.Windows.Forms.Cursors.Arrow;
             generate newTour = new generate();
             try
@@ -173,8 +193,11 @@ namespace multipleTSP
                     //localGo.Enabled = true;
                     //evoGo.Enabled = true;
                     allTours = newTour.random(gv_points, gv_tours, new Point(paintPanel.Width, paintPanel.Height), mid);
+                    allPoints = newTour.allPoints;
+                    this.initMatrixes();
                     this.Refresh();
                 }
+                button_localOpt.Enabled = true;
             //}
 
         }
@@ -360,8 +383,10 @@ namespace multipleTSP
         private void draw_complete_Click(object sender, EventArgs e)
         {
             gv_draw_counter = 0;
+            paintPanel.Cursor = System.Windows.Forms.Cursors.Default;
             button_next_tour.Enabled = false;
             draw_complete.Enabled = false;
+            this.initMatrixes();
         }
 
         private void button_next_tour_Click(object sender, EventArgs e)
@@ -384,12 +409,79 @@ namespace multipleTSP
             }
             this.Refresh();
         }
+
+        private void initMatrixes()
+        {
+            // set matrix size 0 (clear matrix if not initial)
+            Array.Resize(ref distanceMatrix, 0);
+            Array.Resize(ref positionMatrix, 0);
+
+            for (int i = 0; i < allPoints.Length; i++)  //Abstands-Matrix
+            {
+                Array.Resize(ref distanceMatrix, distanceMatrix.Length + 1);
+                distanceMatrix[i] = new double[0];
+                for (int j = 0; j < allPoints.Length; j++)
+                {
+                    Array.Resize(ref distanceMatrix[i], distanceMatrix[i].Length + 1);
+                    distanceMatrix[i][j] = evaluation.twoPoints(allPoints[i], allPoints[j]);
+                }
+            }
+
+            for (int i = 0; i < allPoints.Length; i++)  //Rang-Matrix
+            {
+                Array.Resize(ref positionMatrix, positionMatrix.Length + 1);
+                positionMatrix[i] = new int[0];
+                for (int j = 0; j < allPoints.Length; j++)
+                {
+                    if (i != j)
+                    {
+                        insertPosition(i, j);
+                    }
+                }
+            }
+        }
+
+        private void insertPosition(int index, int pointIndex)
+        {
+            Array.Resize(ref positionMatrix[index], positionMatrix[index].Length + 1);
+            for (int i = 0; i < positionMatrix[index].Length; i++)
+            {
+                if (positionMatrix[index].Length == 1)
+                {
+                    // initialize with first index
+                    positionMatrix[index][i] = pointIndex;
+                    return;
+                }
+                if (evaluation.twoPoints(allPoints[index], allPoints[pointIndex]) > evaluation.twoPoints(allPoints[index], allPoints[positionMatrix[index][i]]))
+                {
+
+                }
+                else
+                //if (evaluation.twoPoints(allPoints[index], allPoints[positionMatrix[index][i]]) >= evaluation.twoPoints(allPoints[index], allPoints[pointIndex]))
+                {
+                    // now insert at correct position: i-1
+                    int[] dummy = new int[positionMatrix[index].Length - (i + 1)];
+                    Array.Copy(positionMatrix[index], i, dummy, 0, dummy.Length);
+                    positionMatrix[index][i] = pointIndex;
+                    Array.Copy(dummy, 0, positionMatrix[index], i + 1, dummy.Length);
+                    return;
+                }
+                if ( (positionMatrix[index].Length - 1) == i)
+                {
+                    positionMatrix[index][i] = pointIndex;
+                    return;
+                }
+            }
+        }
     }
 
     public class generate
     {
+        public Point[] allPoints = new Point[1];
+
         public Point[][] random(int points, int tours, Point max, Point mid)
         {
+            allPoints[0] = new Point(mid.X, mid.Y);
             Point[][] randomTour = new Point[0][];
             Random pointRandom = new Random();
 
@@ -416,12 +508,16 @@ namespace multipleTSP
                         {
                             rnd = true;
                         }
-                        randomTour[i][j] = newPoint;
+                        if ( !rnd )
+                        {
+                            randomTour[i][j] = newPoint;
+                            Array.Resize(ref allPoints, allPoints.Length + 1);
+                            allPoints[allPoints.Length -1] = newPoint;
+                        }
                     }
                 }
             }
-
-
+            
                 return randomTour;
         }
 
@@ -450,80 +546,125 @@ namespace multipleTSP
 
         public Point[] tour2opt(Point[] singleTour)
         {
-            int k = 0;
-            while (k < ( points * 10 ))
+            Point[] newTour = new Point[singleTour.Length];
+            //newTour = singleTour;
+            Array.Copy(singleTour, newTour, singleTour.Length);
+            bool opt_found = true;
+            bool breakLoop = false;
+
+            while (opt_found)
             {
-                //for (int i = 0; i < singleTour.Length; i++)
-                //{
-                Point[] newTour = newNeighbor2opt(singleTour);
-                double eval_new = evaluation.evalTour(newTour);
-                double eval_old = evaluation.evalTour(singleTour);
-                if (eval_new < eval_old)
+                opt_found = false;
+
+                for (int i = 1; i < newTour.Length; i++)
                 {
-                    singleTour = newTour;
-                    k = 0;
-                    //break;
+                    Point dummy = new Point();
+                    dummy = newTour[i];
+                    if (breakLoop)
+                    {
+                        breakLoop = false;
+                        break;
+                    }
+                    for (int j = 1; j < newTour.Length; j++)
+                    {
+                        if (i != j)
+                        {
+                            newTour[i] = newTour[j];
+                            newTour[j] = dummy;
+                            double evalNew = 0;
+                            double evalOld = 0;
+                            evalNew = evaluation.evalTour(newTour);
+                            evalOld = evaluation.evalTour(singleTour);
+                            if (evalNew < evalOld)
+                            {
+                                opt_found = true;
+                                breakLoop = true;
+                                Array.Copy(newTour, singleTour, singleTour.Length);
+                                break;
+                            }
+                            else
+                            {
+                                Array.Copy(singleTour, newTour, singleTour.Length);
+                            }
+                        }
+                    }
                 }
-                else 
-                {
-                    k++;
-                }
-                //}
             }
+
+            //int k = 0;
+            //while (k < ( points * 10 ))
+            //{
+            //    //for (int i = 0; i < singleTour.Length; i++)
+            //    //{
+            //    Point[] newTour = newNeighbor2opt(singleTour);
+            //    double eval_new = evaluation.evalTour(newTour);
+            //    double eval_old = evaluation.evalTour(singleTour);
+            //    if (eval_new < eval_old)
+            //    {
+            //        singleTour = newTour;
+            //        k = 0;
+            //        //break;
+            //    }
+            //    else 
+            //    {
+            //        k++;
+            //    }
+            //    //}
+            //}
 
             return singleTour;
         }
 
-        public Point[] newNeighbor2opt (Point[] singleTour)
-        {
-            Point[] newTour = new Point[singleTour.Length];
+        //public Point[] newNeighbor2opt (Point[] singleTour)
+        //{
+            //Point[] newTour = new Point[singleTour.Length];
+            
+                //int rndIndexA = 0;
+                //int rndIndexB = 0;
+                //Random intRandom = new Random();
 
-            int rndIndexA = 0;
-            int rndIndexB = 0;
-            Random intRandom = new Random();
+                //Array.Copy(singleTour, newTour, singleTour.Length);
+                //rndIndexA = intRandom.Next(0, singleTour.Length - 1);
 
-            Array.Copy(singleTour, newTour, singleTour.Length);
-            rndIndexA = intRandom.Next(0, singleTour.Length - 1);
+                //bool rnd = true;
+                //while (rnd)
+                //{
+                //    rnd = false;
+                //    rndIndexB = intRandom.Next(0, singleTour.Length - 1);
+                //    if (rndIndexA == rndIndexB)
+                //    {
+                //        rnd = true;
+                //    }
+                //    if (rndIndexA + 1 == rndIndexB | rndIndexA - 1 == rndIndexB)
+                //    {
+                //        rnd = true;
+                //    }
+                //}
+                ////now invert array between A+1 and B-1 / B+1 and A-1
+                //if (rndIndexA < rndIndexB)
+                //{
+                //    Array.Reverse(newTour, rndIndexA + 1, (rndIndexB - rndIndexA - 1));
+                //}
+                //else
+                //{
+                //    Array.Reverse(newTour, rndIndexB + 1, (rndIndexA - rndIndexB - 1));
+                //}
 
-            bool rnd = true;
-            while (rnd)
-            {
-                rnd = false;
-                rndIndexB = intRandom.Next(0, singleTour.Length - 1);
-                if (rndIndexA == rndIndexB)
-                {
-                    rnd = true;
-                }
-                if (rndIndexA + 1 == rndIndexB | rndIndexA - 1 == rndIndexB)
-                {
-                    rnd = true;
-                }
-            }
-            //now invert array between A+1 and B-1 / B+1 and A-1
-            if (rndIndexA < rndIndexB)
-            {
-                Array.Reverse(newTour, rndIndexA + 1, (rndIndexB - rndIndexA - 1));
-            }
-            else
-            {
-                Array.Reverse(newTour, rndIndexB + 1, (rndIndexA - rndIndexB - 1));
-            }
+                //return newTour;
+        //}
 
-            return newTour;
-        }
+        //public Point[] newNeighbor3opt(Point[] singleTour)
+        //{
+        //    Point[] newTour = new Point[singleTour.Length];
 
-        public Point[] newNeighbor3opt(Point[] singleTour)
-        {
-            Point[] newTour = new Point[singleTour.Length];
+        //    return newTour;
+        //}
 
-            return newTour;
-        }
+        //public bool isBetter(Point[] oldTour, Point[] newTour)
+        //{
 
-        public bool isBetter(Point[] oldTour, Point[] newTour)
-        {
-
-            return true;
-        }
+        //    return true;
+        //}
     }
 
     public class evaluation
@@ -537,7 +678,23 @@ namespace multipleTSP
                 length += Math.Sqrt(Math.Pow(singleTour[i].X - singleTour[i + 1].X, 2) + Math.Pow(singleTour[i].Y - singleTour[i + 1].Y, 2));
             }
 
+                length += Math.Sqrt(Math.Pow(singleTour[singleTour.Length - 1].X - singleTour[0].X, 2) + Math.Pow(singleTour[singleTour.Length - 1].Y - singleTour[0].Y, 2));
+
                 return length;
+        }
+
+        public static double twoPoints(Point pointA, Point pointB)
+        {
+            double distance = 0;
+
+            if (pointA == pointB)
+            {
+                return 0;
+            }
+
+            distance = Math.Sqrt(Math.Pow(pointA.X - pointB.X, 2) + Math.Pow(pointA.Y - pointB.Y, 2));
+
+            return distance;
         }
     }
 }
