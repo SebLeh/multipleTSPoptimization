@@ -14,6 +14,7 @@ namespace multipleTSP
     public partial class multipleTSP : Form
     {
         public Point[][] allTours = new Point[1][];
+        public int[][] AllTours = new int[1][];
         private Point mid = new Point(0,0);
         int gv_points = 0;
         int gv_tours = 0;
@@ -30,6 +31,8 @@ namespace multipleTSP
         public multipleTSP()
         {
             InitializeComponent();
+            loclOptBox.SelectedIndex = 1;
+            loclOptBoxAll.SelectedIndex = 1;
             paintPanel.Paint += new PaintEventHandler(paint);
             paintPanel.Click += new EventHandler(panel_click);
             paintPanel.Controls.Clear();
@@ -56,6 +59,8 @@ namespace multipleTSP
             Brush redBrush = new SolidBrush(Color.Red);
             Brush blackBrush = new SolidBrush(Color.Black);
 
+            evaluation evaluate = new evaluation(allPoints);
+
             g.FillEllipse(redBrush, mid.X - 2, mid.Y - 2, 5, 5);
 
             for (int i = 0; i < allTours.Length; i++)
@@ -64,7 +69,7 @@ namespace multipleTSP
                 {
                     g.DrawPolygon(blackPen, allTours[i]);
                 }
-                gv_totalLength += evaluation.evalTour(allTours[i]);
+                gv_totalLength += evaluate.evalTour(allTours[i]);
             }
             gv_avgLength = gv_totalLength / gv_tours;
             if (gv_totalLength != 0)
@@ -110,6 +115,10 @@ namespace multipleTSP
             button_localOpt.Enabled = false;
             Array.Resize(ref allTours, 0);
             this.Refresh();
+
+            Array.Resize(ref AllTours, 1);              //##
+            Array.Resize(ref AllTours[0], 1);           //##
+            AllTours[0] = new int[] { 0 };              //##
 
             Array.Resize(ref allTours, 1);
             Array.Resize(ref allTours[0], 1);
@@ -394,25 +403,82 @@ namespace multipleTSP
             gv_draw_counter++;
             Array.Resize(ref allTours, allTours.Length + 1);
             allTours[gv_draw_counter] = new Point[] { mid };
+            Array.Resize(ref AllTours, AllTours.Length + 1);                //##
+            AllTours[AllTours.Length - 1] = new int[] { 0 };                //##
+
         }
 
         private void button_localOpt_Click(object sender, EventArgs e)
         {
-            localOptimization localOpt = new localOptimization(gv_points);
+            localOptimization localOpt = new localOptimization(allPoints);
+
             for (int i = 0; i < allTours.Length; i++)
             {
-                Point[] newTour = localOpt.tour2opt(allTours[i]);
-                //if (evaluation.evalTour(newTour) < evaluation.evalTour(allTours[i]))
+                Point[] newTour = new Point[allTours[i].Length];
+                if (loclOptBox.SelectedIndex == 0)      // no Optimization on single tours
+                {
+                    Array.Copy(allTours[i], newTour, allTours[i].Length);
+                }
+                else if (loclOptBox.SelectedIndex == 1) // 2-Opt
+                {
+                    newTour = localOpt.tour2opt(allTours[i]);
+                }
+                else if (loclOptBox.SelectedIndex == 2) // OR-Opt (3, 2 and 1)
+                {
+                    newTour = localOpt.tourORopt(allTours[i], 3); // OR3-Opt
+                    newTour = localOpt.tourORopt(allTours[i], 2); // OR2-Opt
+                    newTour = localOpt.tourORopt(allTours[i], 1); // OR1-Opt
+                }
+                else if (loclOptBox.SelectedIndex == 3) // OR3-Opt
+                {
+                    newTour = localOpt.tourORopt(allTours[i], 3);
+                }
+                else if (loclOptBox.SelectedIndex == 4) // OR2-Opt
+                {
+                    newTour = localOpt.tourORopt(allTours[i], 2);
+                }
+                else if (loclOptBox.SelectedIndex == 5) // OR1-Opt
+                {
+                    newTour = localOpt.tourORopt(allTours[i], 1);
+                }
+                Array.Copy(newTour, allTours[i], allTours[i].Length);
+                //allTours[i] = newTour;
+            }
+            if (loclOptBoxAll.SelectedIndex == 0)      // no optimization among tours
+            {
+
+            }
+            else if (loclOptBoxAll.SelectedIndex == 1) // OR-Opt (3, 2 and 1)
+            {
+                allTours = localOpt.allORopt(allTours, 3);
+                allTours = localOpt.allORopt(allTours, 2);
+                allTours = localOpt.allORopt(allTours, 1);
+                //for (int i = 0; i < allTours.Length; i++)
                 //{
-                allTours[i] = newTour;
+                //    allTours[i] = localOpt.tour2opt(allTours[i]);
                 //}
             }
+            else if (loclOptBoxAll.SelectedIndex == 2) // OR3-Opt 
+            {
+                allTours = localOpt.allORopt(allTours, 3);
+            }
+            else if (loclOptBoxAll.SelectedIndex == 3) // OR2-Opt
+            {
+                allTours = localOpt.allORopt(allTours, 2);
+            }
+            else if (loclOptBoxAll.SelectedIndex == 4) // OR1-Opt
+            {
+                allTours = localOpt.allORopt(allTours, 1);
+            }
+
             this.Refresh();
         }
 
         private void initMatrixes()
         {
             // set matrix size 0 (clear matrix if not initial)
+            evaluation evaluate = new evaluation(allPoints);
+
             Array.Resize(ref distanceMatrix, 0);
             Array.Resize(ref positionMatrix, 0);
 
@@ -423,7 +489,7 @@ namespace multipleTSP
                 for (int j = 0; j < allPoints.Length; j++)
                 {
                     Array.Resize(ref distanceMatrix[i], distanceMatrix[i].Length + 1);
-                    distanceMatrix[i][j] = evaluation.twoPoints(allPoints[i], allPoints[j]);
+                    distanceMatrix[i][j] = evaluate.twoPoints(allPoints[i], allPoints[j]);
                 }
             }
 
@@ -443,6 +509,7 @@ namespace multipleTSP
 
         private void insertPosition(int index, int pointIndex)
         {
+            evaluation evaluate = new evaluation(allPoints);
             Array.Resize(ref positionMatrix[index], positionMatrix[index].Length + 1);
             for (int i = 0; i < positionMatrix[index].Length; i++)
             {
@@ -452,7 +519,7 @@ namespace multipleTSP
                     positionMatrix[index][i] = pointIndex;
                     return;
                 }
-                if (evaluation.twoPoints(allPoints[index], allPoints[pointIndex]) > evaluation.twoPoints(allPoints[index], allPoints[positionMatrix[index][i]]))
+                if (evaluate.twoPoints(allPoints[index], allPoints[pointIndex]) > evaluate.twoPoints(allPoints[index], allPoints[positionMatrix[index][i]]))
                 {
 
                 }
@@ -483,17 +550,25 @@ namespace multipleTSP
         {
             allPoints[0] = new Point(mid.X, mid.Y);
             Point[][] randomTour = new Point[0][];
+            int[][] newTours = new int[0][];                                //##
+            int k = 0;
             Random pointRandom = new Random();
 
             for (int i = 0; i < tours; i++)
             {
                 Array.Resize(ref randomTour, randomTour.Length + 1);
+                Array.Resize(ref newTours, newTours.Length + 1);            //##
                 randomTour[i] = new Point[1];
                 randomTour[i][0] = mid;
+                newTours[i] = new int[1];                                   //##
+                newTours[i][0] = 0;                                         //##
                 for (int j = 1; j <= points; j++)
                 {
+                    k++;                                                    //##
                     bool rnd = true;
                     Array.Resize(ref randomTour[i], randomTour[i].Length + 1);
+                    Array.Resize(ref newTours[i], newTours[i].Length +1);   //##
+                    newTours[i][j] = k;                                     //##
                     while (rnd)
                     {
                         rnd = false;
@@ -539,9 +614,13 @@ namespace multipleTSP
 
     public class localOptimization
     {
-        int points;
-        public localOptimization(int points){
-            this.points = points;
+        private evaluation evaluate;
+        private Point[] allPoints = new Point[0];
+
+        public localOptimization(Point[] points){
+            Array.Resize(ref this.allPoints, points.Length);
+            Array.Copy(points, this.allPoints, points.Length);
+            evaluate = new evaluation(allPoints);
         }
 
         public Point[] tour2opt(Point[] singleTour)
@@ -558,8 +637,6 @@ namespace multipleTSP
 
                 for (int i = 1; i < newTour.Length; i++)
                 {
-                    Point dummy = new Point();
-                    dummy = newTour[i];
                     if (breakLoop)
                     {
                         breakLoop = false;
@@ -569,12 +646,9 @@ namespace multipleTSP
                     {
                         if (i != j)
                         {
-                            newTour[i] = newTour[j];
-                            newTour[j] = dummy;
-                            double evalNew = 0;
-                            double evalOld = 0;
-                            evalNew = evaluation.evalTour(newTour);
-                            evalOld = evaluation.evalTour(singleTour);
+                            newTour = invert(singleTour, i, j);
+                            double evalNew = evaluate.evalTour(newTour);
+                            double evalOld = evaluate.evalTour(singleTour);
                             if (evalNew < evalOld)
                             {
                                 opt_found = true;
@@ -591,85 +665,177 @@ namespace multipleTSP
                 }
             }
 
-            //int k = 0;
-            //while (k < ( points * 10 ))
-            //{
-            //    //for (int i = 0; i < singleTour.Length; i++)
-            //    //{
-            //    Point[] newTour = newNeighbor2opt(singleTour);
-            //    double eval_new = evaluation.evalTour(newTour);
-            //    double eval_old = evaluation.evalTour(singleTour);
-            //    if (eval_new < eval_old)
-            //    {
-            //        singleTour = newTour;
-            //        k = 0;
-            //        //break;
-            //    }
-            //    else 
-            //    {
-            //        k++;
-            //    }
-            //    //}
-            //}
-
             return singleTour;
         }
 
-        //public Point[] newNeighbor2opt (Point[] singleTour)
-        //{
-            //Point[] newTour = new Point[singleTour.Length];
-            
-                //int rndIndexA = 0;
-                //int rndIndexB = 0;
-                //Random intRandom = new Random();
+        public Point[] invert(Point[] singleTour, int indexA, int indexB)
+        {
+            // invert string between indexA and indexB (including)
+            Point[] newTour = new Point[singleTour.Length];
+            Array.Copy(singleTour, newTour, singleTour.Length);
+            Point[] extract = new Point[0];
+            if (indexA < indexB)
+            {
+                Array.Resize(ref extract, indexB - indexA + 1);
+                Array.Copy(singleTour, indexA, extract, 0, extract.Length);
+                Array.Reverse(extract);
+                Array.Copy(extract, 0, newTour, indexA, extract.Length);
+            }
+            else
+            {
+                Array.Resize(ref extract, indexA - indexB + 1);
+                Array.Copy(singleTour, indexB, extract, 0, extract.Length);
+                Array.Reverse(extract);
+                Array.Copy(extract, 0, newTour, indexB, extract.Length);
+            }
+            return newTour;
+        }
 
-                //Array.Copy(singleTour, newTour, singleTour.Length);
-                //rndIndexA = intRandom.Next(0, singleTour.Length - 1);
+        public Point[] tourORopt(Point[] singleTour, int extractLength)
+        {
+            Point[] newTour = new Point[singleTour.Length];
+            Array.Copy(singleTour, newTour, singleTour.Length);
 
-                //bool rnd = true;
-                //while (rnd)
-                //{
-                //    rnd = false;
-                //    rndIndexB = intRandom.Next(0, singleTour.Length - 1);
-                //    if (rndIndexA == rndIndexB)
-                //    {
-                //        rnd = true;
-                //    }
-                //    if (rndIndexA + 1 == rndIndexB | rndIndexA - 1 == rndIndexB)
-                //    {
-                //        rnd = true;
-                //    }
-                //}
-                ////now invert array between A+1 and B-1 / B+1 and A-1
-                //if (rndIndexA < rndIndexB)
-                //{
-                //    Array.Reverse(newTour, rndIndexA + 1, (rndIndexB - rndIndexA - 1));
-                //}
-                //else
-                //{
-                //    Array.Reverse(newTour, rndIndexB + 1, (rndIndexA - rndIndexB - 1));
-                //}
+            bool optFound = true;
+            bool loopbreak = false;
 
-                //return newTour;
-        //}
+            while (optFound)
+            {
+                optFound = false;
+                for (int i = 1; i < singleTour.Length - (extractLength -1); i++) // extractLength-1, because we dont want outOfRange exception
+                                                                // cannot start at 0, because mid is at 0
+                {
+                    if (loopbreak)
+                    {
+                        loopbreak = false;
+                        break;
+                    }
+                    Point[] extract = new Point[extractLength];
+                    Array.Copy(singleTour, i, extract, 0, extractLength); // Length 3, because OR3
+                    for (int j = 1; j < singleTour.Length - (extractLength - 1); j++)
+                    {
+                        if (i == j)
+                        {
+                            //do nothing (insert would be at same position)
+                        }
+                        else
+                        {
+                            newTour = insertExtract(singleTour, extract, i, j);
+                            if (evaluate.evalTour(newTour) < evaluate.evalTour(singleTour))
+                            {
+                                Array.Copy(newTour, singleTour, singleTour.Length);
+                                optFound = true;
+                                loopbreak = true;
+                                break;
+                            }
+                            else
+                            {
+                                Array.Copy(singleTour, newTour, singleTour.Length);
+                            }
+                        }
+                    }
+                }
+            }
+            return singleTour;
+        }
 
-        //public Point[] newNeighbor3opt(Point[] singleTour)
-        //{
-        //    Point[] newTour = new Point[singleTour.Length];
+        public Point[][] crossedORopt(Point[][] allTours, int indexA, int indexB, int length)
+        {
+            Point[][] newTours = new Point[allTours.Length][];
+            for (int i = 0; i < allTours.Length; i++)
+            {
+                Array.Resize(ref newTours[i], allTours[i].Length);
+                Array.Copy(allTours[i], newTours[i], allTours[i].Length);
+            }
 
-        //    return newTour;
-        //}
+            bool optFound = true;
+            bool loopbreak = false;
 
-        //public bool isBetter(Point[] oldTour, Point[] newTour)
-        //{
+            while (optFound)
+            {
+                optFound = false;
+                for (int i = 1; i < newTours[indexA].Length - (length - 1); i++)
+                {
+                    if (loopbreak)
+                    {
+                        loopbreak = false;
+                        break;
+                    }
+                    Point[] extract = new Point[length];
+                    Array.Copy(newTours[indexA], i, extract, 0, length);
 
-        //    return true;
-        //}
+                    for (int j = 1; j < newTours[indexB].Length - (length - 1); j++)
+                    {
+                        Array.Copy(newTours[indexB], j, newTours[indexA], i, length);
+                        Array.Copy(extract, 0, newTours[indexB], j, length);
+                        //newTours[indexA][i] = newTours[indexB][j];
+                        //newTours[indexB][j] = dummy;
+
+                        if (evaluate.evalAll(newTours) < evaluate.evalAll(allTours))
+                        {
+                            for (int k = 0; k < newTours.Length; k++)
+                            {
+                                Array.Copy(newTours[k], allTours[k], allTours[k].Length);
+                            }
+                            optFound = true;
+                            loopbreak = true;
+                            break;
+                        }
+                        else
+                        {
+                            for (int k = 0; k < allTours.Length; k++)
+                            {
+                                Array.Copy(allTours[k], newTours[k], allTours[k].Length);
+                            }
+                        }
+                    }
+                }
+            }
+            return allTours;
+        }
+
+        public Point[][] allORopt(Point[][] allTours, int extractLength)
+        {
+            for (int i = 0; i < allTours.Length; i++)
+            {
+                for (int j = 0; j < allTours.Length; j++)
+                {
+                    if (i != j)
+                    {
+                        allTours = crossedORopt(allTours, i, j, extractLength);
+                    }
+                }
+            }
+            return allTours;
+        }
+
+        public Point[] insertExtract(Point[] toBeAltered, Point[] extract, int oldIndex, int index)
+        {
+            Point[] inserted = new Point[toBeAltered.Length];
+            Point[] extracted = new Point[toBeAltered.Length - extract.Length];
+            //extracting
+            Array.Copy(toBeAltered, 0, extracted, 0, oldIndex);
+            Array.Copy(toBeAltered, oldIndex + extract.Length, extracted, oldIndex, toBeAltered.Length - extract.Length - oldIndex);
+            //extract removed: array smaller ("extracted")
+            //insert extract at "index" (this is the new position)
+            Array.Copy(extracted, 0, inserted, 0, index);
+            Array.Copy(extract, 0, inserted, index, extract.Length);
+            Array.Copy(extracted, index, inserted, index + extract.Length, inserted.Length - extract.Length - index);
+
+            return inserted;
+        }
     }
 
     public class evaluation
     {
-        public static double evalTour(Point[] singleTour)
+        private Point[] allPoints;
+        public evaluation(Point[] Points)
+        {
+            Array.Resize(ref this.allPoints, Points.Length);
+            Array.Copy(Points, this.allPoints, Points.Length);
+        }
+
+        public double evalTour(Point[] singleTour)
         {
             double length = 0;
 
@@ -683,7 +849,17 @@ namespace multipleTSP
                 return length;
         }
 
-        public static double twoPoints(Point pointA, Point pointB)
+        public double evalAll(Point[][] allTours)
+        {
+            double length = 0;
+            for (int i = 0; i < allTours.Length; i++)
+            {
+                length += evalTour(allTours[i]);
+            }
+            return length;
+        }
+
+        public double twoPoints(Point pointA, Point pointB)
         {
             double distance = 0;
 
