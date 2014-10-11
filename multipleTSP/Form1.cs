@@ -14,11 +14,12 @@ namespace multipleTSP
     public partial class multipleTSP : Form
     {
         public Point[][] allTours = new Point[1][];
-        public int[][] AllTours = new int[1][];
+        public int[][] PiAllTours = new int[1][];         //##
         private Point mid = new Point(0,0);
         int gv_points = 0;
         int gv_tours = 0;
-        int gv_draw_counter; 
+        int gv_draw_counter;
+        int gv_draw_point = 0;
         double gv_totalLength = 0;
         double gv_avgLength = 0;
 
@@ -43,8 +44,10 @@ namespace multipleTSP
             allPoints[0] = new Point(mid.X, mid.Y);
 
             gv_draw_counter = 0;
+            gv_draw_point = 0;
 
             allPoints[0] = mid;
+            PiAllTours[0] = new int[1]{0};
 
         }
 
@@ -84,8 +87,12 @@ namespace multipleTSP
         {
             if (drawMode == true)
             {
+                gv_draw_point++;
                 Array.Resize(ref allTours[gv_draw_counter], allTours[gv_draw_counter].Length + 1);
                 allTours[gv_draw_counter][allTours[gv_draw_counter].Length - 1] = paintPanel.PointToClient(Cursor.Position);
+
+                Array.Resize(ref PiAllTours[gv_draw_counter], PiAllTours[gv_draw_counter].Length + 1);  //##
+                PiAllTours[gv_draw_counter][PiAllTours[gv_draw_counter].Length - 1] = gv_draw_point;    //##
 
                 Array.Resize(ref allPoints, allPoints.Length + 1);
                 allPoints[allPoints.Length - 1] = allTours[gv_draw_counter][allTours[gv_draw_counter].Length - 1];
@@ -116,9 +123,9 @@ namespace multipleTSP
             Array.Resize(ref allTours, 0);
             this.Refresh();
 
-            Array.Resize(ref AllTours, 1);              //##
-            Array.Resize(ref AllTours[0], 1);           //##
-            AllTours[0] = new int[] { 0 };              //##
+            Array.Resize(ref PiAllTours, 1);              //##
+            Array.Resize(ref PiAllTours[0], 1);           //##
+            PiAllTours[0] = new int[] { 0 };              //##
 
             Array.Resize(ref allTours, 1);
             Array.Resize(ref allTours[0], 1);
@@ -130,6 +137,7 @@ namespace multipleTSP
             //Array.Resize(ref points[0], 0);
             allTours[0] = new Point[] { mid };
             gv_draw_counter = 0;
+            gv_draw_point = 0;
         }
 
         private void sAVEToolStripMenuItem_Click(object sender, EventArgs e)
@@ -203,6 +211,7 @@ namespace multipleTSP
                     //evoGo.Enabled = true;
                     allTours = newTour.random(gv_points, gv_tours, new Point(paintPanel.Width, paintPanel.Height), mid);
                     allPoints = newTour.allPoints;
+                    PiAllTours = newTour.PiAllTours;
                     this.initMatrixes();
                     this.Refresh();
                 }
@@ -403,8 +412,8 @@ namespace multipleTSP
             gv_draw_counter++;
             Array.Resize(ref allTours, allTours.Length + 1);
             allTours[gv_draw_counter] = new Point[] { mid };
-            Array.Resize(ref AllTours, AllTours.Length + 1);                //##
-            AllTours[AllTours.Length - 1] = new int[] { 0 };                //##
+            Array.Resize(ref PiAllTours, PiAllTours.Length + 1);                //##
+            PiAllTours[PiAllTours.Length - 1] = new int[] { 0 };                //##
 
         }
 
@@ -545,30 +554,31 @@ namespace multipleTSP
     public class generate
     {
         public Point[] allPoints = new Point[1];
+        public int[][] PiAllTours = new int[0][];
 
         public Point[][] random(int points, int tours, Point max, Point mid)
         {
             allPoints[0] = new Point(mid.X, mid.Y);
             Point[][] randomTour = new Point[0][];
-            int[][] newTours = new int[0][];                                //##
+            //int[][] PiAllTours = new int[0][];                                  //##
             int k = 0;
             Random pointRandom = new Random();
 
             for (int i = 0; i < tours; i++)
             {
                 Array.Resize(ref randomTour, randomTour.Length + 1);
-                Array.Resize(ref newTours, newTours.Length + 1);            //##
+                Array.Resize(ref PiAllTours, PiAllTours.Length + 1);            //##
                 randomTour[i] = new Point[1];
                 randomTour[i][0] = mid;
-                newTours[i] = new int[1];                                   //##
-                newTours[i][0] = 0;                                         //##
+                PiAllTours[i] = new int[1];                                     //##
+                PiAllTours[i][0] = 0;                                           //##
                 for (int j = 1; j <= points; j++)
                 {
-                    k++;                                                    //##
+                    k++;                                                        //##
                     bool rnd = true;
                     Array.Resize(ref randomTour[i], randomTour[i].Length + 1);
-                    Array.Resize(ref newTours[i], newTours[i].Length +1);   //##
-                    newTours[i][j] = k;                                     //##
+                    Array.Resize(ref PiAllTours[i], PiAllTours[i].Length + 1);  //##
+                    PiAllTours[i][j] = k;                                       //##
                     while (rnd)
                     {
                         rnd = false;
@@ -591,9 +601,8 @@ namespace multipleTSP
                         }
                     }
                 }
-            }
-            
-                return randomTour;
+            }            
+            return randomTour;
         }
 
         private bool contains(Point[][] newTour, Point newPoint)

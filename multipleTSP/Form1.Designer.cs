@@ -50,11 +50,11 @@
             this.gui_avgLength = new System.Windows.Forms.TextBox();
             this.draw_complete = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.label6 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
             this.loclOptBoxAll = new System.Windows.Forms.ComboBox();
             this.button_localOpt = new System.Windows.Forms.Button();
             this.loclOptBox = new System.Windows.Forms.ComboBox();
-            this.label5 = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -279,6 +279,26 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Local Optimization";
             // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
+            this.label6.Location = new System.Drawing.Point(135, 56);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(71, 13);
+            this.label6.TabIndex = 7;
+            this.label6.Text = "(among tours)";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
+            this.label5.Location = new System.Drawing.Point(135, 26);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(66, 13);
+            this.label5.TabIndex = 6;
+            this.label5.Text = "(single tours)";
+            // 
             // loclOptBoxAll
             // 
             this.loclOptBoxAll.FormattingEnabled = true;
@@ -319,26 +339,6 @@
             this.loclOptBox.Name = "loclOptBox";
             this.loclOptBox.Size = new System.Drawing.Size(121, 23);
             this.loclOptBox.TabIndex = 4;
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
-            this.label5.Location = new System.Drawing.Point(135, 26);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(66, 13);
-            this.label5.TabIndex = 6;
-            this.label5.Text = "(single tours)";
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
-            this.label6.Location = new System.Drawing.Point(135, 56);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(71, 13);
-            this.label6.TabIndex = 7;
-            this.label6.Text = "(among tours)";
             // 
             // multipleTSP
             // 
