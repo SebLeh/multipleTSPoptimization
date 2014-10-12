@@ -71,15 +71,14 @@ namespace multipleTSP
 
             g.FillEllipse(redBrush, mid.X - 2, mid.Y - 2, 5, 5);
 
-            for (int i = 0; i < allTours.Length; i++)
-            {
-                if (allTours[i].Length > 1)
-                {
-                    g.DrawPolygon(blackPen, allTours[i]);
-                }
-                //gv_totalLength += evaluate.evalTour(allTours[i]);
-            }
-            gv_totalLength = evaluate.evalAll(allTours);
+            //for (int i = 0; i < allTours.Length; i++)
+            //{
+            //    if (allTours[i].Length > 1)
+            //    {
+            //        g.DrawPolygon(blackPen, allTours[i]);
+            //    }
+            //}
+            //gv_totalLength = evaluate.evalAll(allTours);
 
             for (int i = 0; i < PiAllTours.Length; i++)
             {
@@ -87,9 +86,9 @@ namespace multipleTSP
                 {
                     for (int j = 1; j < PiAllTours[i].Length; j++)
                     {
-                        g.DrawLine(bluePen, allPoints[PiAllTours[i][j - 1]], allPoints[PiAllTours[i][j]]);
+                        g.DrawLine(blackPen, allPoints[PiAllTours[i][j - 1]], allPoints[PiAllTours[i][j]]);
                     }
-                    g.DrawLine(bluePen, allPoints[PiAllTours[i][PiAllTours[i].Length - 1]], mid);
+                    g.DrawLine(blackPen, allPoints[PiAllTours[i][PiAllTours[i].Length - 1]], mid);
                 }
             }
 
@@ -183,7 +182,8 @@ namespace multipleTSP
                     using (fs = (System.IO.FileStream)saveFile.OpenFile())
                     using (fw = new System.IO.StreamWriter(fs))
                     {
-                        fw.Write(format.toString(allTours));
+                        //fw.Write(format.toString(allTours));
+                        fw.Write(format.toString(PiAllTours, allPoints));
                     }
                     fw.Close();
                     fs.Close();
@@ -270,9 +270,12 @@ namespace multipleTSP
                         {
                             fr = new System.IO.StreamReader(openFile.FileName);
                             pathString = fr.ReadToEnd();
-                            allTours = format.toPoints(pathString);
-                            gv_tours = 0;
-                            gv_points = 0;
+                            //allTours = format.toPoints(pathString);
+                            format.toPoints(pathString);
+                            allPoints = format.allPoints;
+                            PiAllTours = format.PiAllTours;
+                            gv_tours = PiAllTours.Length;
+                            gv_points = PiAllTours[0].Length;
                             //for (int i = 0; i < allTours.Length; i++)
                             //{
                             //    if (fullPath[i].X == midX && fullPath[i].Y == midY)
@@ -311,6 +314,8 @@ namespace multipleTSP
 
         public class path_format
         {
+            public int[][] PiAllTours = new int[1][];
+            public Point[] allPoints = new Point[0];
             public string toString(Point[][] points)
             {
                 String tourString = null;
@@ -339,74 +344,180 @@ namespace multipleTSP
 
                 return tourString;
             }
-
-            public Point[][] toPoints(String tourString)
+            public string toString(int[][] points, Point[] allPoints)
             {
-                Point[][] fullPath = new Point[1][];
-                fullPath[0] = new Point[0];
-                string point = "";
-
-                bool newPoint = true;
-                int i = 0;
-                int j = 0;
-
-                while (newPoint)
+                string tourString = null;
+                try
                 {
-                    if (tourString.Length != 0)
+                    // write allPoints
+                    for (int i = 0; i < allPoints.Length; i++)
                     {
-                        try
+                        if (i == allPoints.Length - 1)
                         {
-                            char[] token = new char[1];
-                            tourString.CopyTo(0, token, 0, 1);
-                            tourString = tourString.Remove(0, 1);
-                            if (token[0].ToString() == ",")
+                            tourString += allPoints[i].X.ToString() + "|" + allPoints[i].Y.ToString() + ";";
+                        }
+                        else
+                        {
+                            tourString += allPoints[i].X.ToString() + "|" + allPoints[i].Y.ToString() + ",";
+                        }
+                    }
+                    //tourString += Environment.NewLine;
+
+                    for (int i = 0; i < points.Length; i++)
+                    {
+                        for (int j = 0; j < points[i].Length; j++)
+                        {
+                            if (j == points[i].Length - 1)
                             {
-                                Array.Resize(ref fullPath[i], fullPath[i].Length + 1);
-                                fullPath[i][j].X = int.Parse(point);
-                                point = "";
-                            }
-                            else if (token[0].ToString() == "|")
-                            {
-                                fullPath[i][j].Y = int.Parse(point);
-                                point = "";
-                                j++;
-                                //i++;
-                                //Array.Resize(ref fullPath[i], i + 1);
-                            }
-                            else if (token[0].ToString() == ";")
-                            {
-                                fullPath[i][j].Y = int.Parse(point);
-                                if (tourString.Length != 0)
-                                {
-                                    Array.Resize(ref fullPath, fullPath.Length + 1);
-                                    fullPath[fullPath.Length - 1] = new Point[0];
-                                    i++;
-                                    point = "";
-                                    j = 0;
-                                }
-                                else
-                                {
-                                    newPoint = false;
-                                }
+                                tourString += points[i][j].ToString() + "_";
                             }
                             else
                             {
-                                point += token[0].ToString();
+                                tourString += points[i][j].ToString() + "-";
                             }
-                            //if (tourString.Length == 0)
-                            //{
-                            //    newPoint = false;
-                            //}
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show("Problem beim Parsen vom String: " + ex.Message);
                         }
                     }
                 }
+                catch (System.IndexOutOfRangeException)
+                {
 
-                return fullPath;
+                }
+                return tourString;
             }
+
+            public void toPoints(string tourString)
+            {
+                char[] token = new char[1];
+                //int number;
+                string word = null;
+                bool letterLeft = true;
+                bool step2 = false;
+                
+                while (letterLeft)
+                {
+                    letterLeft = false;
+                    //try 
+                    //{
+                        //if (tourString.Length > 0)
+                        //{
+                    tourString.CopyTo(0, token, 0, 1);
+                    tourString = tourString.Remove(0, 1);
+                    if (tourString.Length > 0)
+                    {
+                        letterLeft = true;
+                    }
+
+                    if (token[0].ToString() == "," && !step2)
+                    {
+                        allPoints[allPoints.Length - 1].Y = int.Parse(word);
+                        word = null;
+                    }
+                    else if (token[0].ToString() == "|" && !step2)
+                    {
+                        Array.Resize(ref allPoints, allPoints.Length + 1);
+                        allPoints[allPoints.Length - 1].X = int.Parse(word);
+                        word = null;
+                    }
+                    else if (token[0].ToString() == "-" && step2)
+                    {
+                        Array.Resize(ref PiAllTours[PiAllTours.Length - 1], PiAllTours[PiAllTours.Length - 1].Length + 1);
+                        PiAllTours[PiAllTours.Length - 1][PiAllTours[PiAllTours.Length - 1].Length - 1] = int.Parse(word);
+                        word = null;
+                    }
+
+                    else if (token[0].ToString() == "_" && step2)
+                    {
+                        Array.Resize(ref PiAllTours[PiAllTours.Length - 1], PiAllTours[PiAllTours.Length - 1].Length + 1);
+                        PiAllTours[PiAllTours.Length - 1][PiAllTours[PiAllTours.Length - 1].Length - 1] = int.Parse(word);
+                        if ( tourString.Length > 1)
+                        {
+                            Array.Resize(ref PiAllTours, PiAllTours.Length + 1);
+                            PiAllTours[PiAllTours.Length - 1] = new int[0];
+                        }
+                        word = null;
+                    }
+
+                    else if (token[0].ToString() == ";" && !step2)
+                    {
+                        allPoints[allPoints.Length - 1].Y = int.Parse(word);
+                        PiAllTours[PiAllTours.Length - 1] = new int[0];
+                        step2 = true;
+                        word = null;
+                    }
+                    else
+                    {
+                        word += token[0].ToString();
+                    }
+                }
+            }
+
+            //public Point[][] toPoints(String tourString)
+            //{
+            //    Point[][] fullPath = new Point[1][];
+            //    fullPath[0] = new Point[0];
+            //    string point = "";
+
+            //    bool newPoint = true;
+            //    int i = 0;
+            //    int j = 0;
+
+            //    while (newPoint)
+            //    {
+            //        if (tourString.Length != 0)
+            //        {
+            //            try
+            //            {
+            //                char[] token = new char[1];
+            //                tourString.CopyTo(0, token, 0, 1);
+            //                tourString = tourString.Remove(0, 1);
+            //                if (token[0].ToString() == ",")
+            //                {
+            //                    Array.Resize(ref fullPath[i], fullPath[i].Length + 1);
+            //                    fullPath[i][j].X = int.Parse(point);
+            //                    point = "";
+            //                }
+            //                else if (token[0].ToString() == "|")
+            //                {
+            //                    fullPath[i][j].Y = int.Parse(point);
+            //                    point = "";
+            //                    j++;
+            //                    //i++;
+            //                    //Array.Resize(ref fullPath[i], i + 1);
+            //                }
+            //                else if (token[0].ToString() == ";")
+            //                {
+            //                    fullPath[i][j].Y = int.Parse(point);
+            //                    if (tourString.Length != 0)
+            //                    {
+            //                        Array.Resize(ref fullPath, fullPath.Length + 1);
+            //                        fullPath[fullPath.Length - 1] = new Point[0];
+            //                        i++;
+            //                        point = "";
+            //                        j = 0;
+            //                    }
+            //                    else
+            //                    {
+            //                        newPoint = false;
+            //                    }
+            //                }
+            //                else
+            //                {
+            //                    point += token[0].ToString();
+            //                }
+            //                //if (tourString.Length == 0)
+            //                //{
+            //                //    newPoint = false;
+            //                //}
+            //            }
+            //            catch (Exception ex)
+            //            {
+            //                MessageBox.Show("Problem beim Parsen vom String: " + ex.Message);
+            //            }
+            //        }
+            //    }
+
+            //    return fullPath;
+            //}
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -455,36 +566,37 @@ namespace multipleTSP
                 int[] PiNewTour = new int[PiAllTours[i].Length];
                 if (loclOptBox.SelectedIndex == 0)      // no Optimization on single tours
                 {
-                    Array.Copy(allTours[i], newTour, allTours[i].Length);
+                    //Array.Copy(allTours[i], newTour, allTours[i].Length);
+                    Array.Copy(PiAllTours[i], PiNewTour, PiAllTours[i].Length);
                 }
                 else if (loclOptBox.SelectedIndex == 1) // 2-Opt
                 {
-                    newTour = localOpt.tour2opt(allTours[i]);
+                    //newTour = localOpt.tour2opt(allTours[i]);
                     PiNewTour = localOpt.tour2opt(PiAllTours[i]);
 
                 }
                 else if (loclOptBox.SelectedIndex == 2) // OR-Opt (3, 2 and 1)
                 {
-                    newTour = localOpt.tourORopt(allTours[i], 3); // OR3-Opt
+                    //newTour = localOpt.tourORopt(allTours[i], 3); // OR3-Opt
                     PiNewTour = localOpt.tourORopt(PiAllTours[i], 3);
-                    newTour = localOpt.tourORopt(allTours[i], 2); // OR2-Opt
+                    //newTour = localOpt.tourORopt(allTours[i], 2); // OR2-Opt
                     PiNewTour = localOpt.tourORopt(PiAllTours[i], 2);
-                    newTour = localOpt.tourORopt(allTours[i], 1); // OR1-Opt
+                    //newTour = localOpt.tourORopt(allTours[i], 1); // OR1-Opt
                     PiNewTour = localOpt.tourORopt(PiAllTours[i], 1);
                 }
                 else if (loclOptBox.SelectedIndex == 3) // OR3-Opt
                 {
-                    newTour = localOpt.tourORopt(allTours[i], 3);
+                    //newTour = localOpt.tourORopt(allTours[i], 3);
                     PiNewTour = localOpt.tourORopt(PiAllTours[i], 3);
                 }
                 else if (loclOptBox.SelectedIndex == 4) // OR2-Opt
                 {
-                    newTour = localOpt.tourORopt(allTours[i], 2);
+                    //newTour = localOpt.tourORopt(allTours[i], 2);
                     PiNewTour = localOpt.tourORopt(PiAllTours[i], 2);
                 }
                 else if (loclOptBox.SelectedIndex == 5) // OR1-Opt
                 {
-                    newTour = localOpt.tourORopt(allTours[i], 1);
+                    //newTour = localOpt.tourORopt(allTours[i], 1);
                     PiNewTour = localOpt.tourORopt(PiAllTours[i], 1);
                 }
                 Array.Copy(newTour, allTours[i], allTours[i].Length);
@@ -496,11 +608,11 @@ namespace multipleTSP
             }
             else if (loclOptBoxAll.SelectedIndex == 1) // OR-Opt (3, 2 and 1)
             {
-                allTours = localOpt.allORopt(allTours, 3);
+                //allTours = localOpt.allORopt(allTours, 3);
                 PiAllTours = localOpt.allORopt(PiAllTours, 3);
-                allTours = localOpt.allORopt(allTours, 2);
+                //allTours = localOpt.allORopt(allTours, 2);
                 PiAllTours = localOpt.allORopt(PiAllTours, 2);
-                allTours = localOpt.allORopt(allTours, 1);
+                //allTours = localOpt.allORopt(allTours, 1);
                 PiAllTours = localOpt.allORopt(PiAllTours, 1);
                 //for (int i = 0; i < allTours.Length; i++)
                 //{
@@ -509,17 +621,17 @@ namespace multipleTSP
             }
             else if (loclOptBoxAll.SelectedIndex == 2) // OR3-Opt 
             {
-                allTours = localOpt.allORopt(allTours, 3);
+                //allTours = localOpt.allORopt(allTours, 3);
                 PiAllTours = localOpt.allORopt(PiAllTours, 3);
             }
             else if (loclOptBoxAll.SelectedIndex == 3) // OR2-Opt
             {
-                allTours = localOpt.allORopt(allTours, 2);
+                //allTours = localOpt.allORopt(allTours, 2);
                 PiAllTours = localOpt.allORopt(PiAllTours, 2);
             }
             else if (loclOptBoxAll.SelectedIndex == 4) // OR1-Opt
             {
-                allTours = localOpt.allORopt(allTours, 1);
+                //allTours = localOpt.allORopt(allTours, 1);
                 PiAllTours = localOpt.allORopt(PiAllTours, 1);
             }
 
