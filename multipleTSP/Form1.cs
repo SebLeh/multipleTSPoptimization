@@ -77,8 +77,9 @@ namespace multipleTSP
                 {
                     g.DrawPolygon(blackPen, allTours[i]);
                 }
-                gv_totalLength += evaluate.evalTour(allTours[i]);
+                //gv_totalLength += evaluate.evalTour(allTours[i]);
             }
+            gv_totalLength = evaluate.evalAll(allTours);
 
             for (int i = 0; i < PiAllTours.Length; i++)
             {
@@ -440,6 +441,7 @@ namespace multipleTSP
             allTours[gv_draw_counter] = new Point[] { mid };
             Array.Resize(ref PiAllTours, PiAllTours.Length + 1);                //##
             PiAllTours[PiAllTours.Length - 1] = new int[] { 0 };                //##
+            gv_tours = gv_draw_counter + 1;
 
         }
 
@@ -464,20 +466,26 @@ namespace multipleTSP
                 else if (loclOptBox.SelectedIndex == 2) // OR-Opt (3, 2 and 1)
                 {
                     newTour = localOpt.tourORopt(allTours[i], 3); // OR3-Opt
+                    PiNewTour = localOpt.tourORopt(PiAllTours[i], 3);
                     newTour = localOpt.tourORopt(allTours[i], 2); // OR2-Opt
+                    PiNewTour = localOpt.tourORopt(PiAllTours[i], 2);
                     newTour = localOpt.tourORopt(allTours[i], 1); // OR1-Opt
+                    PiNewTour = localOpt.tourORopt(PiAllTours[i], 1);
                 }
                 else if (loclOptBox.SelectedIndex == 3) // OR3-Opt
                 {
                     newTour = localOpt.tourORopt(allTours[i], 3);
+                    PiNewTour = localOpt.tourORopt(PiAllTours[i], 3);
                 }
                 else if (loclOptBox.SelectedIndex == 4) // OR2-Opt
                 {
                     newTour = localOpt.tourORopt(allTours[i], 2);
+                    PiNewTour = localOpt.tourORopt(PiAllTours[i], 2);
                 }
                 else if (loclOptBox.SelectedIndex == 5) // OR1-Opt
                 {
                     newTour = localOpt.tourORopt(allTours[i], 1);
+                    PiNewTour = localOpt.tourORopt(PiAllTours[i], 1);
                 }
                 Array.Copy(newTour, allTours[i], allTours[i].Length);
                 //allTours[i] = newTour;
@@ -489,8 +497,11 @@ namespace multipleTSP
             else if (loclOptBoxAll.SelectedIndex == 1) // OR-Opt (3, 2 and 1)
             {
                 allTours = localOpt.allORopt(allTours, 3);
+                PiAllTours = localOpt.allORopt(PiAllTours, 3);
                 allTours = localOpt.allORopt(allTours, 2);
+                PiAllTours = localOpt.allORopt(PiAllTours, 2);
                 allTours = localOpt.allORopt(allTours, 1);
+                PiAllTours = localOpt.allORopt(PiAllTours, 1);
                 //for (int i = 0; i < allTours.Length; i++)
                 //{
                 //    allTours[i] = localOpt.tour2opt(allTours[i]);
@@ -499,14 +510,17 @@ namespace multipleTSP
             else if (loclOptBoxAll.SelectedIndex == 2) // OR3-Opt 
             {
                 allTours = localOpt.allORopt(allTours, 3);
+                PiAllTours = localOpt.allORopt(PiAllTours, 3);
             }
             else if (loclOptBoxAll.SelectedIndex == 3) // OR2-Opt
             {
                 allTours = localOpt.allORopt(allTours, 2);
+                PiAllTours = localOpt.allORopt(PiAllTours, 2);
             }
             else if (loclOptBoxAll.SelectedIndex == 4) // OR1-Opt
             {
                 allTours = localOpt.allORopt(allTours, 1);
+                PiAllTours = localOpt.allORopt(PiAllTours, 1);
             }
 
             this.Refresh();
@@ -855,6 +869,48 @@ namespace multipleTSP
 
         public int[] tourORopt(int[] piTour, int extractLength)
         {
+            int[] newTour = new int[piTour.Length];
+
+            bool optFound = true;
+            bool loopBreak = false;
+
+            while (optFound)
+            {
+                optFound = false;
+                for (int i = 1; i < piTour.Length - (extractLength - 1); i++) // extractLength-1, because we dont want outOfRange exception
+                // cannot start at 0, because mid is at 0
+                {
+                    if (loopBreak)
+                    {
+                        loopBreak = false;
+                        break;
+                    }
+                    int[] extract = new int[extractLength];
+                    Array.Copy(piTour, i, extract, 0, extractLength); // Length 3, because OR3
+                    for (int j = 1; j < piTour.Length - (extractLength - 1); j++)
+                    {
+                        if (i == j)
+                        {
+                            //do nothing (insert would be at same position)
+                        }
+                        else
+                        {
+                            newTour = insertExtract(piTour, extract, i, j);
+                            if (evaluate.evalTour(newTour) < evaluate.evalTour(piTour))
+                            {
+                                Array.Copy(newTour, piTour, piTour.Length);
+                                optFound = true;
+                                loopBreak = true;
+                                break;
+                            }
+                            else
+                            {
+                                Array.Copy(piTour, newTour, piTour.Length);
+                            }
+                        }
+                    }
+                }
+            }
 
             return piTour;
         }
@@ -914,6 +970,62 @@ namespace multipleTSP
             return allTours;
         }
 
+        public int[][] crossedORopt(int[][] piAllTours, int indexA, int indexB, int length)
+        {
+            int[][] newTours = new int[piAllTours.Length][];
+            for (int i = 0; i < piAllTours.Length; i++)
+            {
+                Array.Resize(ref newTours[i], piAllTours[i].Length);
+                Array.Copy(piAllTours[i], newTours[i], piAllTours[i].Length);
+            }
+
+            bool optFound = true;
+            bool loopbreak = false;
+
+            while (optFound)
+            {
+                optFound = false;
+                for (int i = 1; i < newTours[indexA].Length - (length - 1); i++)
+                {
+                    if (loopbreak)
+                    {
+                        loopbreak = false;
+                        break;
+                    }
+                    int[] extract = new int[length];
+                    Array.Copy(newTours[indexA], i, extract, 0, length);
+
+                    for (int j = 1; j < newTours[indexB].Length - (length - 1); j++)
+                    {
+                        Array.Copy(newTours[indexB], j, newTours[indexA], i, length);
+                        Array.Copy(extract, 0, newTours[indexB], j, length);
+                        //newTours[indexA][i] = newTours[indexB][j];
+                        //newTours[indexB][j] = dummy;
+
+                        if (evaluate.evalAll(newTours) < evaluate.evalAll(piAllTours))
+                        {
+                            for (int k = 0; k < newTours.Length; k++)
+                            {
+                                Array.Copy(newTours[k], piAllTours[k], piAllTours[k].Length);
+                            }
+                            optFound = true;
+                            loopbreak = true;
+                            break;
+                        }
+                        else
+                        {
+                            for (int k = 0; k < piAllTours.Length; k++)
+                            {
+                                Array.Copy(piAllTours[k], newTours[k], piAllTours[k].Length);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return piAllTours;
+        }
+
         public Point[][] allORopt(Point[][] allTours, int extractLength)
         {
             for (int i = 0; i < allTours.Length; i++)
@@ -928,11 +1040,42 @@ namespace multipleTSP
             }
             return allTours;
         }
+        public int[][] allORopt(int[][] piAllTours, int extractLength)
+        {
+            for (int i = 0; i < piAllTours.Length; i++)
+            {
+                for (int j = 0; j < piAllTours.Length; j++)
+                {
+                    if (i != j)
+                    {
+                        piAllTours = crossedORopt(piAllTours, i, j, extractLength);
+                    }
+                }
+            }
+
+                return piAllTours;
+        }
 
         public Point[] insertExtract(Point[] toBeAltered, Point[] extract, int oldIndex, int index)
         {
             Point[] inserted = new Point[toBeAltered.Length];
             Point[] extracted = new Point[toBeAltered.Length - extract.Length];
+            //extracting
+            Array.Copy(toBeAltered, 0, extracted, 0, oldIndex);
+            Array.Copy(toBeAltered, oldIndex + extract.Length, extracted, oldIndex, toBeAltered.Length - extract.Length - oldIndex);
+            //extract removed: array smaller ("extracted")
+            //insert extract at "index" (this is the new position)
+            Array.Copy(extracted, 0, inserted, 0, index);
+            Array.Copy(extract, 0, inserted, index, extract.Length);
+            Array.Copy(extracted, index, inserted, index + extract.Length, inserted.Length - extract.Length - index);
+
+            return inserted;
+        }
+
+        public int[] insertExtract(int[] toBeAltered, int[] extract, int oldIndex, int index)
+        {
+            int[] inserted = new int[toBeAltered.Length];
+            int[] extracted = new int[toBeAltered.Length - extract.Length];
             //extracting
             Array.Copy(toBeAltered, 0, extracted, 0, oldIndex);
             Array.Copy(toBeAltered, oldIndex + extract.Length, extracted, oldIndex, toBeAltered.Length - extract.Length - oldIndex);
