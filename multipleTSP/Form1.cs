@@ -429,6 +429,7 @@ namespace multipleTSP
             paintPanel.Cursor = System.Windows.Forms.Cursors.Default;
             button_next_tour.Enabled = false;
             draw_complete.Enabled = false;
+            button_localOpt.Enabled = true;
             this.initMatrixes();
         }
 
@@ -852,6 +853,12 @@ namespace multipleTSP
             return singleTour;
         }
 
+        public int[] tourORopt(int[] piTour, int extractLength)
+        {
+
+            return piTour;
+        }
+
         public Point[][] crossedORopt(Point[][] allTours, int indexA, int indexB, int length)
         {
             Point[][] newTours = new Point[allTours.Length][];
@@ -981,7 +988,7 @@ namespace multipleTSP
 
             if (singleTour.Length > 1)
             {
-                for (int i = 1; i < singleTour.Length - 1; i++)
+                for (int i = 1; i < singleTour.Length; i++)
                 {
                     length += distanceMatrix[singleTour[i - 1]][singleTour[i]];             //all points from start to last
                 }
