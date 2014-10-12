@@ -29,6 +29,8 @@ namespace multipleTSP
 
         Boolean drawMode = false;
 
+        evaluation evaluate = new evaluation();
+
         public multipleTSP()
         {
             InitializeComponent();
@@ -61,8 +63,11 @@ namespace multipleTSP
             Pen blackPen = new Pen(Color.Black);
             Brush redBrush = new SolidBrush(Color.Red);
             Brush blackBrush = new SolidBrush(Color.Black);
+            Pen bluePen = new Pen(Color.Blue);
 
-            evaluation evaluate = new evaluation(allPoints);
+            //evaluation evaluate = new evaluation(allPoints, distanceMatrix);
+            evaluate.allPoints = allPoints;
+            evaluate.distanceMatrix = distanceMatrix;
 
             g.FillEllipse(redBrush, mid.X - 2, mid.Y - 2, 5, 5);
 
@@ -74,6 +79,21 @@ namespace multipleTSP
                 }
                 gv_totalLength += evaluate.evalTour(allTours[i]);
             }
+
+            for (int i = 0; i < PiAllTours.Length; i++)
+            {
+                if (PiAllTours[i].Length > 1)
+                {
+                    for (int j = 1; j < PiAllTours[i].Length; j++)
+                    {
+                        g.DrawLine(bluePen, allPoints[PiAllTours[i][j - 1]], allPoints[PiAllTours[i][j]]);
+                    }
+                    g.DrawLine(bluePen, allPoints[PiAllTours[i][PiAllTours[i].Length - 1]], mid);
+                }
+            }
+
+            gv_totalLength = evaluate.evalAll(PiAllTours);
+
             gv_avgLength = gv_totalLength / gv_tours;
             if (gv_totalLength != 0)
             {
@@ -96,6 +116,8 @@ namespace multipleTSP
 
                 Array.Resize(ref allPoints, allPoints.Length + 1);
                 allPoints[allPoints.Length - 1] = allTours[gv_draw_counter][allTours[gv_draw_counter].Length - 1];
+
+                this.initMatrixes();
 
                 this.Refresh();
             }
@@ -121,7 +143,6 @@ namespace multipleTSP
             draw_button.Enabled = true;
             button_localOpt.Enabled = false;
             Array.Resize(ref allTours, 0);
-            this.Refresh();
 
             Array.Resize(ref PiAllTours, 1);              //##
             Array.Resize(ref PiAllTours[0], 1);           //##
@@ -138,6 +159,8 @@ namespace multipleTSP
             allTours[0] = new Point[] { mid };
             gv_draw_counter = 0;
             gv_draw_point = 0;
+
+            this.Refresh();
         }
 
         private void sAVEToolStripMenuItem_Click(object sender, EventArgs e)
@@ -212,7 +235,9 @@ namespace multipleTSP
                     allTours = newTour.random(gv_points, gv_tours, new Point(paintPanel.Width, paintPanel.Height), mid);
                     allPoints = newTour.allPoints;
                     PiAllTours = newTour.PiAllTours;
+                    evaluate.allPoints = allPoints;
                     this.initMatrixes();
+                    evaluate.distanceMatrix = distanceMatrix;
                     this.Refresh();
                 }
                 button_localOpt.Enabled = true;
@@ -419,11 +444,12 @@ namespace multipleTSP
 
         private void button_localOpt_Click(object sender, EventArgs e)
         {
-            localOptimization localOpt = new localOptimization(allPoints);
+            localOptimization localOpt = new localOptimization(allPoints, distanceMatrix);
 
             for (int i = 0; i < allTours.Length; i++)
             {
                 Point[] newTour = new Point[allTours[i].Length];
+                int[] PiNewTour = new int[PiAllTours[i].Length];
                 if (loclOptBox.SelectedIndex == 0)      // no Optimization on single tours
                 {
                     Array.Copy(allTours[i], newTour, allTours[i].Length);
@@ -431,6 +457,8 @@ namespace multipleTSP
                 else if (loclOptBox.SelectedIndex == 1) // 2-Opt
                 {
                     newTour = localOpt.tour2opt(allTours[i]);
+                    PiNewTour = localOpt.tour2opt(PiAllTours[i]);
+
                 }
                 else if (loclOptBox.SelectedIndex == 2) // OR-Opt (3, 2 and 1)
                 {
@@ -486,7 +514,7 @@ namespace multipleTSP
         private void initMatrixes()
         {
             // set matrix size 0 (clear matrix if not initial)
-            evaluation evaluate = new evaluation(allPoints);
+            //evaluation evaluate = new evaluation(allPoints, distanceMatrix);
 
             Array.Resize(ref distanceMatrix, 0);
             Array.Resize(ref positionMatrix, 0);
@@ -518,7 +546,7 @@ namespace multipleTSP
 
         private void insertPosition(int index, int pointIndex)
         {
-            evaluation evaluate = new evaluation(allPoints);
+            //evaluation evaluate = new evaluation(allPoints, distanceMatrix);
             Array.Resize(ref positionMatrix[index], positionMatrix[index].Length + 1);
             for (int i = 0; i < positionMatrix[index].Length; i++)
             {
@@ -625,11 +653,63 @@ namespace multipleTSP
     {
         private evaluation evaluate;
         private Point[] allPoints = new Point[0];
+        private double[][] distanceMatrix = new double[0][];
 
-        public localOptimization(Point[] points){
+        public localOptimization(Point[] points, double[][] distMatrix){
             Array.Resize(ref this.allPoints, points.Length);
             Array.Copy(points, this.allPoints, points.Length);
-            evaluate = new evaluation(allPoints);
+
+            Array.Resize(ref distanceMatrix, distMatrix.Length);
+            for (int i = 0; i < distMatrix.Length; i++)
+            {
+                Array.Resize(ref distanceMatrix[i], distMatrix[i].Length);
+                Array.Copy(distMatrix[i], distanceMatrix[i], distMatrix[i].Length);
+            }
+
+                evaluate = new evaluation(allPoints, distanceMatrix);
+        }
+
+        public int[] tour2opt(int[] PiSingleTour)
+        {
+            int[] newTour = new int[PiSingleTour.Length];
+            Array.Copy(PiSingleTour, newTour, PiSingleTour.Length);
+
+            bool optFound = true;
+            bool loopBreak = false;
+
+            while (optFound)
+            {
+                optFound = false;
+                for (int i = 1; i < newTour.Length; i++)
+                {
+                    if (loopBreak)
+                    {
+                        loopBreak = false;
+                        break;
+                    }
+                    for (int j = 1; j < newTour.Length; j++)
+                    {
+                        if (i != j)
+                        {
+                            newTour = invert(PiSingleTour, i, j);
+                            if (evaluate.evalTour(newTour) < evaluate.evalTour(PiSingleTour))
+                            {
+                                Array.Copy(newTour, PiSingleTour, newTour.Length);
+                                //loopBreak = true;
+                                optFound = true;
+                                //break;
+                            }
+                            else
+                            {
+                                Array.Copy(PiSingleTour, newTour, newTour.Length);
+                            }
+                            
+                        }
+                    }
+                }
+            }
+
+            return PiSingleTour;
         }
 
         public Point[] tour2opt(Point[] singleTour)
@@ -661,9 +741,9 @@ namespace multipleTSP
                             if (evalNew < evalOld)
                             {
                                 opt_found = true;
-                                breakLoop = true;
+                                //breakLoop = true;
                                 Array.Copy(newTour, singleTour, singleTour.Length);
-                                break;
+                                //break;
                             }
                             else
                             {
@@ -675,6 +755,30 @@ namespace multipleTSP
             }
 
             return singleTour;
+        }
+
+        public int[] invert(int[] singleTour, int indexA, int indexB)
+        {
+            // invert string between indexA and indexB (including)
+            int[] newTour = new int[singleTour.Length];
+            Array.Copy(singleTour, newTour, singleTour.Length);
+            int[] extract = new int[0];
+            if (indexA < indexB)
+            {
+                Array.Resize(ref extract, indexB - indexA + 1);
+                Array.Copy(singleTour, indexA, extract, 0, extract.Length);
+                Array.Reverse(extract);
+                Array.Copy(extract, 0, newTour, indexA, extract.Length);
+            }
+            else
+            {
+                Array.Resize(ref extract, indexA - indexB + 1);
+                Array.Copy(singleTour, indexB, extract, 0, extract.Length);
+                Array.Reverse(extract);
+                Array.Copy(extract, 0, newTour, indexB, extract.Length);
+            }
+
+            return newTour;
         }
 
         public Point[] invert(Point[] singleTour, int indexA, int indexB)
@@ -837,11 +941,24 @@ namespace multipleTSP
 
     public class evaluation
     {
-        private Point[] allPoints;
-        public evaluation(Point[] Points)
+        public Point[] allPoints;
+        public double[][] distanceMatrix;
+
+        public evaluation()
+        {
+        }
+
+        public evaluation(Point[] Points, double[][] distMatrix)
         {
             Array.Resize(ref this.allPoints, Points.Length);
             Array.Copy(Points, this.allPoints, Points.Length);
+
+            Array.Resize(ref this.distanceMatrix, distMatrix.Length);
+            for (int i = 0; i < distanceMatrix.Length; i++)
+            {
+                Array.Resize(ref distanceMatrix[i], distMatrix[i].Length);
+                Array.Copy(distMatrix[i], distanceMatrix[i], distMatrix[i].Length);
+            }
         }
 
         public double evalTour(Point[] singleTour)
@@ -858,12 +975,37 @@ namespace multipleTSP
                 return length;
         }
 
+        public double evalTour(int[] singleTour)
+        {
+            double length = 0;
+
+            if (singleTour.Length > 1)
+            {
+                for (int i = 1; i < singleTour.Length - 1; i++)
+                {
+                    length += distanceMatrix[singleTour[i - 1]][singleTour[i]];             //all points from start to last
+                }
+                length += distanceMatrix[singleTour[singleTour.Length - 1]][0]; //back to mid
+            }
+            return length;
+        }
+
         public double evalAll(Point[][] allTours)
         {
             double length = 0;
             for (int i = 0; i < allTours.Length; i++)
             {
                 length += evalTour(allTours[i]);
+            }
+            return length;
+        }
+
+        public double evalAll(int[][] PiAllTours)
+        {
+            double length = 0;
+            for (int i = 0; i < PiAllTours.Length; i++)
+            {
+                length += evalTour(PiAllTours[i]);
             }
             return length;
         }
