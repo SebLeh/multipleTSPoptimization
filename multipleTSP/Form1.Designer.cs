@@ -38,6 +38,7 @@
             this.paintPanel = new System.Windows.Forms.Panel();
             this.draw_button = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.generateBox = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.gui_points = new System.Windows.Forms.TextBox();
@@ -50,6 +51,7 @@
             this.gui_avgLength = new System.Windows.Forms.TextBox();
             this.draw_complete = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.cb_neigh = new System.Windows.Forms.CheckBox();
             this.label6 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.loclOptBoxAll = new System.Windows.Forms.ComboBox();
@@ -143,6 +145,7 @@
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.generateBox);
             this.groupBox2.Controls.Add(this.label1);
             this.groupBox2.Controls.Add(this.label2);
             this.groupBox2.Controls.Add(this.gui_points);
@@ -151,10 +154,23 @@
             this.groupBox2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.25F);
             this.groupBox2.Location = new System.Drawing.Point(12, 31);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(290, 80);
+            this.groupBox2.Size = new System.Drawing.Size(290, 126);
             this.groupBox2.TabIndex = 14;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Initialization";
+            // 
+            // generateBox
+            // 
+            this.generateBox.FormattingEnabled = true;
+            this.generateBox.Items.AddRange(new object[] {
+            "Random",
+            "Greedy (alternate)",
+            "Greedy (consecutive)",
+            "Radial"});
+            this.generateBox.Location = new System.Drawing.Point(6, 82);
+            this.generateBox.Name = "generateBox";
+            this.generateBox.Size = new System.Drawing.Size(121, 23);
+            this.generateBox.TabIndex = 6;
             // 
             // label1
             // 
@@ -195,7 +211,7 @@
             // button_generate
             // 
             this.button_generate.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
-            this.button_generate.Location = new System.Drawing.Point(221, 49);
+            this.button_generate.Location = new System.Drawing.Point(221, 96);
             this.button_generate.Name = "button_generate";
             this.button_generate.Size = new System.Drawing.Size(63, 23);
             this.button_generate.TabIndex = 1;
@@ -266,18 +282,29 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.cb_neigh);
             this.groupBox1.Controls.Add(this.label6);
             this.groupBox1.Controls.Add(this.label5);
             this.groupBox1.Controls.Add(this.loclOptBoxAll);
             this.groupBox1.Controls.Add(this.button_localOpt);
             this.groupBox1.Controls.Add(this.loclOptBox);
             this.groupBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.25F);
-            this.groupBox1.Location = new System.Drawing.Point(12, 118);
+            this.groupBox1.Location = new System.Drawing.Point(12, 177);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(290, 87);
+            this.groupBox1.Size = new System.Drawing.Size(290, 115);
             this.groupBox1.TabIndex = 21;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Local Optimization";
+            // 
+            // cb_neigh
+            // 
+            this.cb_neigh.AutoSize = true;
+            this.cb_neigh.Location = new System.Drawing.Point(7, 81);
+            this.cb_neigh.Name = "cb_neigh";
+            this.cb_neigh.Size = new System.Drawing.Size(122, 20);
+            this.cb_neigh.TabIndex = 8;
+            this.cb_neigh.Text = "use Neighbours";
+            this.cb_neigh.UseVisualStyleBackColor = true;
             // 
             // label6
             // 
@@ -401,6 +428,8 @@
         private System.Windows.Forms.ComboBox loclOptBoxAll;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.CheckBox cb_neigh;
+        private System.Windows.Forms.ComboBox generateBox;
     }
 }
 
