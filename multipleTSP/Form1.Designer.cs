@@ -51,6 +51,12 @@
             this.gui_avgLength = new System.Windows.Forms.TextBox();
             this.draw_complete = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.label10 = new System.Windows.Forms.Label();
+            this.button_insert = new System.Windows.Forms.Button();
+            this.label9 = new System.Windows.Forms.Label();
+            this.tb_insert_percent = new System.Windows.Forms.TextBox();
+            this.label8 = new System.Windows.Forms.Label();
+            this.label7 = new System.Windows.Forms.Label();
             this.cb_neigh = new System.Windows.Forms.CheckBox();
             this.label6 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
@@ -138,7 +144,7 @@
             this.draw_button.Location = new System.Drawing.Point(308, 388);
             this.draw_button.Name = "draw_button";
             this.draw_button.Size = new System.Drawing.Size(151, 23);
-            this.draw_button.TabIndex = 16;
+            this.draw_button.TabIndex = 5;
             this.draw_button.Text = "draw Tours";
             this.draw_button.UseVisualStyleBackColor = true;
             this.draw_button.Click += new System.EventHandler(this.button1_Click);
@@ -170,7 +176,7 @@
             this.generateBox.Location = new System.Drawing.Point(6, 82);
             this.generateBox.Name = "generateBox";
             this.generateBox.Size = new System.Drawing.Size(121, 23);
-            this.generateBox.TabIndex = 6;
+            this.generateBox.TabIndex = 3;
             // 
             // label1
             // 
@@ -197,7 +203,7 @@
             this.gui_points.Location = new System.Drawing.Point(141, 49);
             this.gui_points.Name = "gui_points";
             this.gui_points.Size = new System.Drawing.Size(68, 21);
-            this.gui_points.TabIndex = 3;
+            this.gui_points.TabIndex = 2;
             this.gui_points.Text = "10";
             // 
             // gui_tours
@@ -205,7 +211,7 @@
             this.gui_tours.Location = new System.Drawing.Point(141, 23);
             this.gui_tours.Name = "gui_tours";
             this.gui_tours.Size = new System.Drawing.Size(68, 21);
-            this.gui_tours.TabIndex = 5;
+            this.gui_tours.TabIndex = 1;
             this.gui_tours.Text = "2";
             // 
             // button_generate
@@ -214,7 +220,7 @@
             this.button_generate.Location = new System.Drawing.Point(221, 96);
             this.button_generate.Name = "button_generate";
             this.button_generate.Size = new System.Drawing.Size(63, 23);
-            this.button_generate.TabIndex = 1;
+            this.button_generate.TabIndex = 4;
             this.button_generate.Text = "generate";
             this.button_generate.UseVisualStyleBackColor = true;
             this.button_generate.Click += new System.EventHandler(this.button_generate_Click);
@@ -225,7 +231,7 @@
             this.button_next_tour.Location = new System.Drawing.Point(465, 388);
             this.button_next_tour.Name = "button_next_tour";
             this.button_next_tour.Size = new System.Drawing.Size(151, 23);
-            this.button_next_tour.TabIndex = 15;
+            this.button_next_tour.TabIndex = 6;
             this.button_next_tour.Text = "next Tour";
             this.button_next_tour.UseVisualStyleBackColor = true;
             this.button_next_tour.Click += new System.EventHandler(this.button_next_tour_Click);
@@ -275,13 +281,19 @@
             this.draw_complete.Location = new System.Drawing.Point(621, 388);
             this.draw_complete.Name = "draw_complete";
             this.draw_complete.Size = new System.Drawing.Size(151, 23);
-            this.draw_complete.TabIndex = 20;
+            this.draw_complete.TabIndex = 7;
             this.draw_complete.Text = "completed";
             this.draw_complete.UseVisualStyleBackColor = true;
             this.draw_complete.Click += new System.EventHandler(this.draw_complete_Click);
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.label10);
+            this.groupBox1.Controls.Add(this.button_insert);
+            this.groupBox1.Controls.Add(this.label9);
+            this.groupBox1.Controls.Add(this.tb_insert_percent);
+            this.groupBox1.Controls.Add(this.label8);
+            this.groupBox1.Controls.Add(this.label7);
             this.groupBox1.Controls.Add(this.cb_neigh);
             this.groupBox1.Controls.Add(this.label6);
             this.groupBox1.Controls.Add(this.label5);
@@ -291,10 +303,70 @@
             this.groupBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.25F);
             this.groupBox1.Location = new System.Drawing.Point(12, 177);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(290, 115);
+            this.groupBox1.Size = new System.Drawing.Size(290, 164);
             this.groupBox1.TabIndex = 21;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Local Optimization";
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.25F);
+            this.label10.Location = new System.Drawing.Point(8, 120);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(116, 16);
+            this.label10.TabIndex = 13;
+            this.label10.Text = "Insert Optimization";
+            // 
+            // button_insert
+            // 
+            this.button_insert.Enabled = false;
+            this.button_insert.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
+            this.button_insert.Location = new System.Drawing.Point(221, 135);
+            this.button_insert.Name = "button_insert";
+            this.button_insert.Size = new System.Drawing.Size(63, 23);
+            this.button_insert.TabIndex = 13;
+            this.button_insert.Text = "insert";
+            this.button_insert.UseVisualStyleBackColor = true;
+            this.button_insert.Click += new System.EventHandler(this.button_insert_Click);
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.25F);
+            this.label9.Location = new System.Drawing.Point(148, 143);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(20, 16);
+            this.label9.TabIndex = 11;
+            this.label9.Text = "%";
+            // 
+            // tb_insert_percent
+            // 
+            this.tb_insert_percent.Location = new System.Drawing.Point(112, 140);
+            this.tb_insert_percent.Name = "tb_insert_percent";
+            this.tb_insert_percent.Size = new System.Drawing.Size(30, 21);
+            this.tb_insert_percent.TabIndex = 12;
+            this.tb_insert_percent.Text = "10";
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.25F);
+            this.label8.Location = new System.Drawing.Point(15, 142);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(92, 16);
+            this.label8.TabIndex = 7;
+            this.label8.Text = "Tour Variation";
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
+            this.label7.Location = new System.Drawing.Point(130, 122);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(118, 13);
+            this.label7.TabIndex = 10;
+            this.label7.Text = "(varitate points per tour)";
             // 
             // cb_neigh
             // 
@@ -302,7 +374,7 @@
             this.cb_neigh.Location = new System.Drawing.Point(7, 81);
             this.cb_neigh.Name = "cb_neigh";
             this.cb_neigh.Size = new System.Drawing.Size(122, 20);
-            this.cb_neigh.TabIndex = 8;
+            this.cb_neigh.TabIndex = 10;
             this.cb_neigh.Text = "use Neighbours";
             this.cb_neigh.UseVisualStyleBackColor = true;
             // 
@@ -338,7 +410,7 @@
             this.loclOptBoxAll.Location = new System.Drawing.Point(7, 51);
             this.loclOptBoxAll.Name = "loclOptBoxAll";
             this.loclOptBoxAll.Size = new System.Drawing.Size(121, 23);
-            this.loclOptBoxAll.TabIndex = 5;
+            this.loclOptBoxAll.TabIndex = 9;
             // 
             // button_localOpt
             // 
@@ -347,7 +419,7 @@
             this.button_localOpt.Location = new System.Drawing.Point(221, 51);
             this.button_localOpt.Name = "button_localOpt";
             this.button_localOpt.Size = new System.Drawing.Size(63, 23);
-            this.button_localOpt.TabIndex = 1;
+            this.button_localOpt.TabIndex = 11;
             this.button_localOpt.Text = "start";
             this.button_localOpt.UseVisualStyleBackColor = true;
             this.button_localOpt.Click += new System.EventHandler(this.button_localOpt_Click);
@@ -365,7 +437,7 @@
             this.loclOptBox.Location = new System.Drawing.Point(7, 21);
             this.loclOptBox.Name = "loclOptBox";
             this.loclOptBox.Size = new System.Drawing.Size(121, 23);
-            this.loclOptBox.TabIndex = 4;
+            this.loclOptBox.TabIndex = 8;
             // 
             // multipleTSP
             // 
@@ -430,6 +502,12 @@
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.CheckBox cb_neigh;
         private System.Windows.Forms.ComboBox generateBox;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.TextBox tb_insert_percent;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.Button button_insert;
     }
 }
 

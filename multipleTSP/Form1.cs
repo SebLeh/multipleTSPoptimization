@@ -143,6 +143,7 @@ namespace multipleTSP
             button_generate.Enabled = true;
             draw_button.Enabled = true;
             button_localOpt.Enabled = false;
+            button_insert.Enabled = false;
             Array.Resize(ref allTours, 0);
 
             Array.Resize(ref PiAllTours, 1);              //##
@@ -200,6 +201,7 @@ namespace multipleTSP
         private void button_generate_Click(object sender, EventArgs e)
         {
             draw_button.Enabled = false;
+            button_insert.Enabled = true;
             paintPanel.Cursor = System.Windows.Forms.Cursors.Arrow;
             generate newTour = new generate();
             try
@@ -656,6 +658,53 @@ namespace multipleTSP
                 }
             }
         }
+
+        private void button_insert_Click(object sender, EventArgs e)
+        {
+            double percentage = 0;
+            bool optFound = true;
+            int[][] newTours = new int[PiAllTours.Length][];
+            localOptimization loclOpt = new localOptimization(allPoints, distanceMatrix, positionMatrix);
+            try
+            {
+                percentage = double.Parse(tb_insert_percent.Text);
+            }
+
+            catch (System.Exception)
+            {
+                MessageBox.Show("Please only insert positive numbers");
+                return;
+            }
+
+            while (optFound)
+            {
+                optFound = false;
+                for (int i = 0; i < PiAllTours.Length; i++)
+                {
+                    for (int j = 0; j < PiAllTours.Length; j++)
+                    {
+                        if (i != j)
+                        {
+                            newTours = loclOpt.insert(PiAllTours, i, j, percentage);
+                            for (int k = 0; k < PiAllTours.Length; k++)
+                            {
+                                loclOpt.tour2opt(newTours[k]);
+                            }
+                            if (evaluate.evalAll(newTours) < evaluate.evalAll(PiAllTours))
+                            {
+                                optFound = true;
+                                for (int l = 0; l < newTours.Length; l++)
+                                {
+                                    Array.Copy(newTours[l], PiAllTours[l], newTours[l].Length);
+                                }
+                               
+                            }
+                        }
+                    }
+                }
+            }
+            this.Refresh();
+        }
     }
 
     public class generate
@@ -794,8 +843,75 @@ namespace multipleTSP
         public int[][] radial()
         {
             int[][] radialTour = new int[0][];
+            Array.Resize(ref radialTour, PiAllTours.Length);
+            for (int i = 0; i < PiAllTours.Length; i++)
+            {
+                Array.Resize(ref radialTour, PiAllTours.Length);
+                radialTour[i] = new int[PiAllTours[i].Length];
+                radialTour[i][0] = PiAllTours[i][0];
+            }
 
-            return radialTour;
+            double[] angles = new double[allPoints.Length];
+            evaluation eval = new evaluation();
+
+            int[] all = new int[allPoints.Length];
+            for (int i = 0; i < all.Length; i++)
+            {
+                all[i] = i;
+            }
+
+            for (int i = 0; i < allPoints.Length; i++)
+            {
+                if (allPoints[i].X <= allPoints[0].X && allPoints[i].Y <= allPoints[0].Y) // x< ; y< /Q3
+                {
+                    angles[i] = 180 + Math.Abs(Math.Asin((allPoints[0].Y - allPoints[i].Y) / eval.twoPoints(allPoints[0], allPoints[i])) * (180 / Math.PI));
+                }
+                else if (allPoints[i].X > allPoints[0].X && allPoints[i].Y < allPoints[0].Y) // x> ; y< /Q4
+                {
+                    angles[i] = 360 - (Math.Asin((allPoints[0].Y - allPoints[i].Y) / eval.twoPoints(allPoints[0], allPoints[i])) * (180 / Math.PI));
+                }
+                else if (allPoints[i].X < allPoints[0].X && allPoints[i].Y > allPoints[0].Y) // x< ; y> /Q2
+                {
+                    angles[i] = 180 - Math.Abs(Math.Asin((allPoints[0].Y - allPoints[i].Y) / eval.twoPoints(allPoints[0], allPoints[i])) * (180 / Math.PI));
+                }
+                else //Q1
+                {
+                    angles[i] = Math.Abs(Math.Asin((allPoints[0].Y - allPoints[i].Y) / eval.twoPoints(allPoints[0], allPoints[i])) * (180 / Math.PI));
+                }
+            }
+
+            bool swap = true;
+            while (swap)    //sorting by angle (bubblesort)
+            {
+                swap = false;
+                for (int i = 1; i < allPoints.Length - 1; i++)
+                {
+                    int dummy = 0;
+                    double angle = 0;
+                    if (angles[i] < angles[i + 1])
+                    {
+                        swap = true;
+                        dummy = all[i];
+                        angle = angles[i];
+                        all[i] = all[i + 1];
+                        all[i + 1] = dummy;
+                        angles[i] = angles[i + 1];
+                        angles[i + 1] = angle;
+                    }
+                }
+            }
+
+            int k = 0;
+            for (int i = 0; i < radialTour.Length; i++)
+            {
+                for (int j = 1; j < radialTour[i].Length; j++)
+                {
+                    k++;
+                    radialTour[i][j] = all[k];
+                }
+            }
+
+                return radialTour;
         }
 
         private bool contains(Point[][] newTour, Point newPoint)
@@ -1116,8 +1232,71 @@ namespace multipleTSP
                     j++;
                 }
             }
-
             return neighbours;
+        }
+
+        public int[][] insert(int[][] PiAllPoints, int indexA, int indexB, double percentage)
+        {
+            int[][] oldPOints = new int[PiAllPoints.Length][];
+            for (int i=0; i< PiAllPoints.Length; i++)
+            {
+                oldPOints[i] = new int[PiAllPoints[i].Length];
+                Array.Copy(PiAllPoints[i], oldPOints[i], PiAllPoints[i].Length);
+            }
+            int[] pointsAOld = new int[PiAllPoints[indexA].Length];
+            Array.Copy(PiAllPoints[indexA], pointsAOld, PiAllPoints[indexA].Length);
+            int[] pointsBOld = new int[PiAllPoints[indexB].Length];
+            Array.Copy(PiAllPoints[indexB], pointsBOld, PiAllPoints[indexB].Length);
+
+            bool optFound = true;
+            bool loopBreak = false;
+
+            while (optFound)
+            {
+                optFound = false;
+                for (int i = 1; i < PiAllPoints[indexA].Length; i++)
+                {
+                    if (loopBreak)
+                    {
+                        loopBreak = false;
+                        break;
+                    }
+                    for (int j = 1; j < PiAllPoints[indexB].Length; j++)
+                    {
+                        int insertPoint = PiAllPoints[indexA][i];
+                        int[] tempA = new int[PiAllPoints[indexA].Length - (i + 1)];
+                        Array.Copy(PiAllPoints[indexA], i + 1, tempA, 0, PiAllPoints[indexA].Length - (i + 1));
+                        Array.Resize(ref PiAllPoints[indexA], PiAllPoints[indexA].Length - 1);
+                        Array.Copy(tempA, 0, PiAllPoints[indexA], i, tempA.Length);
+
+                        Array.Resize(ref PiAllPoints[indexB], PiAllPoints[indexB].Length + 1);
+                        int[] tempB = new int[PiAllPoints[indexB].Length - (j+1)];
+                        Array.Copy(PiAllPoints[indexB],j ,tempB ,0 , tempB.Length);
+                        PiAllPoints[indexB][j] = insertPoint;
+                        Array.Copy(tempB, 0, PiAllPoints[indexB], j + 1, tempB.Length);
+                        if (evaluate.evalAll(PiAllPoints) >= evaluate.evalAll(oldPOints))
+                        {
+                            //Änderungen verwerfen
+                            Array.Resize(ref PiAllPoints[indexA], oldPOints[indexA].Length);
+                            Array.Resize(ref PiAllPoints[indexB], oldPOints[indexB].Length);
+                            Array.Copy(oldPOints[indexA], PiAllPoints[indexA], PiAllPoints[indexA].Length);
+                            Array.Copy(oldPOints[indexB], PiAllPoints[indexB], PiAllPoints[indexB].Length);
+                        }
+                        else
+                        {
+                            //Änderungen übernehmen
+                            optFound = true;
+                            for (int k=0; k< PiAllPoints.Length; k++)
+                            {
+                                Array.Resize(ref oldPOints[k], PiAllPoints[k].Length);
+                                Array.Copy(PiAllPoints[k], oldPOints[k], PiAllPoints[k].Length);
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+            return PiAllPoints;
         }
 
         private bool contains(int[] piTour, int point)
@@ -1130,6 +1309,56 @@ namespace multipleTSP
                 }
             }
             return false;
+        }
+    }
+
+    public class evoOpt
+    {
+        private Point[] allPoints = new Point[0];
+        private double[][] distanceMatrix = new double[0][];
+        private int[][] positionMatrix = new int[0][];
+
+        private int[][][] population = new int[0][][];
+        private int[][][] newGeneration = new int[0][][];
+
+        evoOpt(Point[] points, double[][] distMatrix, int[][] posMatrix)
+        {
+            Array.Copy(points, this.allPoints, points.Length);
+            for (int i = 0; i < distMatrix.Length; i++)
+            {
+                Array.Copy(distMatrix[i], this.distanceMatrix[i], distMatrix[i].Length);
+            }
+            for (int i = 0; i < posMatrix.Length; i++)
+            {
+                Array.Copy(posMatrix[i], this.positionMatrix[i], posMatrix[i].Length);
+            }
+        }
+
+        //private evaluation evaluate = new evaluation(allPoints, distanceMatrix);
+
+        public void initPopulation(int[][] PiAllPoints, int populationSize)
+        {
+            Array.Resize(ref population, populationSize);
+            for (int i = 0; i < populationSize; i++)
+            {
+                Array.Resize(ref population, PiAllPoints.Length);
+            }
+
+            for (int i = 0; i < population[0].Length; i++)
+            {
+                Array.Resize(ref population[0][i], PiAllPoints[i].Length);
+                Array.Copy(PiAllPoints[i], population[0][i], PiAllPoints[i].Length);
+            }
+            for (int i = 1; i < population.Length; i++)
+            {
+
+            }
+        }
+
+        public int[][] bomb(int[][] PiAllTours, int bombSize)
+        {
+
+            return PiAllTours;
         }
     }
 
