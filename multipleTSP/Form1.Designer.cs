@@ -38,6 +38,7 @@
             this.paintPanel = new System.Windows.Forms.Panel();
             this.draw_button = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.button_greedy = new System.Windows.Forms.Button();
             this.generateBox = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
@@ -51,6 +52,7 @@
             this.gui_avgLength = new System.Windows.Forms.TextBox();
             this.draw_complete = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.button_loclCompl = new System.Windows.Forms.Button();
             this.label10 = new System.Windows.Forms.Label();
             this.button_insert = new System.Windows.Forms.Button();
             this.label9 = new System.Windows.Forms.Label();
@@ -63,9 +65,23 @@
             this.loclOptBoxAll = new System.Windows.Forms.ComboBox();
             this.button_localOpt = new System.Windows.Forms.Button();
             this.loclOptBox = new System.Windows.Forms.ComboBox();
+            this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.button_evoStart = new System.Windows.Forms.Button();
+            this.cb_evoStrategy = new System.Windows.Forms.ComboBox();
+            this.ui_bombSize = new System.Windows.Forms.TextBox();
+            this.ui_generations = new System.Windows.Forms.TextBox();
+            this.ui_popGrowth = new System.Windows.Forms.TextBox();
+            this.ui_popSize = new System.Windows.Forms.TextBox();
+            this.label16 = new System.Windows.Forms.Label();
+            this.label15 = new System.Windows.Forms.Label();
+            this.label14 = new System.Windows.Forms.Label();
+            this.label13 = new System.Windows.Forms.Label();
+            this.label12 = new System.Windows.Forms.Label();
+            this.label11 = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
+            this.groupBox3.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -151,6 +167,7 @@
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.button_greedy);
             this.groupBox2.Controls.Add(this.generateBox);
             this.groupBox2.Controls.Add(this.label1);
             this.groupBox2.Controls.Add(this.label2);
@@ -160,10 +177,22 @@
             this.groupBox2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.25F);
             this.groupBox2.Location = new System.Drawing.Point(12, 31);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(290, 126);
+            this.groupBox2.Size = new System.Drawing.Size(290, 103);
             this.groupBox2.TabIndex = 14;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Initialization";
+            // 
+            // button_greedy
+            // 
+            this.button_greedy.Enabled = false;
+            this.button_greedy.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
+            this.button_greedy.Location = new System.Drawing.Point(221, 77);
+            this.button_greedy.Name = "button_greedy";
+            this.button_greedy.Size = new System.Drawing.Size(63, 23);
+            this.button_greedy.TabIndex = 5;
+            this.button_greedy.Text = "greedy";
+            this.button_greedy.UseVisualStyleBackColor = true;
+            this.button_greedy.Click += new System.EventHandler(this.button1_Click_1);
             // 
             // generateBox
             // 
@@ -173,7 +202,7 @@
             "Greedy (alternate)",
             "Greedy (consecutive)",
             "Radial"});
-            this.generateBox.Location = new System.Drawing.Point(6, 82);
+            this.generateBox.Location = new System.Drawing.Point(6, 77);
             this.generateBox.Name = "generateBox";
             this.generateBox.Size = new System.Drawing.Size(121, 23);
             this.generateBox.TabIndex = 3;
@@ -204,7 +233,7 @@
             this.gui_points.Name = "gui_points";
             this.gui_points.Size = new System.Drawing.Size(68, 21);
             this.gui_points.TabIndex = 2;
-            this.gui_points.Text = "10";
+            this.gui_points.Text = "100";
             // 
             // gui_tours
             // 
@@ -217,7 +246,7 @@
             // button_generate
             // 
             this.button_generate.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
-            this.button_generate.Location = new System.Drawing.Point(221, 96);
+            this.button_generate.Location = new System.Drawing.Point(221, 49);
             this.button_generate.Name = "button_generate";
             this.button_generate.Size = new System.Drawing.Size(63, 23);
             this.button_generate.TabIndex = 4;
@@ -250,7 +279,7 @@
             // 
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F);
-            this.label4.Location = new System.Drawing.Point(305, 451);
+            this.label4.Location = new System.Drawing.Point(529, 426);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(103, 16);
             this.label4.TabIndex = 18;
@@ -258,7 +287,7 @@
             // 
             // gui_totalLength
             // 
-            this.gui_totalLength.Location = new System.Drawing.Point(435, 422);
+            this.gui_totalLength.Location = new System.Drawing.Point(393, 422);
             this.gui_totalLength.Name = "gui_totalLength";
             this.gui_totalLength.ReadOnly = true;
             this.gui_totalLength.RightToLeft = System.Windows.Forms.RightToLeft.No;
@@ -268,7 +297,7 @@
             // 
             // gui_avgLength
             // 
-            this.gui_avgLength.Location = new System.Drawing.Point(435, 447);
+            this.gui_avgLength.Location = new System.Drawing.Point(638, 422);
             this.gui_avgLength.Name = "gui_avgLength";
             this.gui_avgLength.ReadOnly = true;
             this.gui_avgLength.Size = new System.Drawing.Size(130, 20);
@@ -288,6 +317,7 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.button_loclCompl);
             this.groupBox1.Controls.Add(this.label10);
             this.groupBox1.Controls.Add(this.button_insert);
             this.groupBox1.Controls.Add(this.label9);
@@ -301,12 +331,24 @@
             this.groupBox1.Controls.Add(this.button_localOpt);
             this.groupBox1.Controls.Add(this.loclOptBox);
             this.groupBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.25F);
-            this.groupBox1.Location = new System.Drawing.Point(12, 177);
+            this.groupBox1.Location = new System.Drawing.Point(12, 140);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(290, 164);
             this.groupBox1.TabIndex = 21;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Local Optimization";
+            // 
+            // button_loclCompl
+            // 
+            this.button_loclCompl.Enabled = false;
+            this.button_loclCompl.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
+            this.button_loclCompl.Location = new System.Drawing.Point(221, 80);
+            this.button_loclCompl.Name = "button_loclCompl";
+            this.button_loclCompl.Size = new System.Drawing.Size(63, 23);
+            this.button_loclCompl.TabIndex = 14;
+            this.button_loclCompl.Text = "full run";
+            this.button_loclCompl.UseVisualStyleBackColor = true;
+            this.button_loclCompl.Click += new System.EventHandler(this.button2_Click);
             // 
             // label10
             // 
@@ -371,7 +413,7 @@
             // cb_neigh
             // 
             this.cb_neigh.AutoSize = true;
-            this.cb_neigh.Location = new System.Drawing.Point(7, 81);
+            this.cb_neigh.Location = new System.Drawing.Point(7, 80);
             this.cb_neigh.Name = "cb_neigh";
             this.cb_neigh.Size = new System.Drawing.Size(122, 20);
             this.cb_neigh.TabIndex = 10;
@@ -439,6 +481,139 @@
             this.loclOptBox.Size = new System.Drawing.Size(121, 23);
             this.loclOptBox.TabIndex = 8;
             // 
+            // groupBox3
+            // 
+            this.groupBox3.Controls.Add(this.button_evoStart);
+            this.groupBox3.Controls.Add(this.cb_evoStrategy);
+            this.groupBox3.Controls.Add(this.ui_bombSize);
+            this.groupBox3.Controls.Add(this.ui_generations);
+            this.groupBox3.Controls.Add(this.ui_popGrowth);
+            this.groupBox3.Controls.Add(this.ui_popSize);
+            this.groupBox3.Controls.Add(this.label16);
+            this.groupBox3.Controls.Add(this.label15);
+            this.groupBox3.Controls.Add(this.label14);
+            this.groupBox3.Controls.Add(this.label13);
+            this.groupBox3.Controls.Add(this.label12);
+            this.groupBox3.Controls.Add(this.label11);
+            this.groupBox3.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.25F);
+            this.groupBox3.Location = new System.Drawing.Point(12, 311);
+            this.groupBox3.Name = "groupBox3";
+            this.groupBox3.Size = new System.Drawing.Size(290, 242);
+            this.groupBox3.TabIndex = 22;
+            this.groupBox3.TabStop = false;
+            this.groupBox3.Text = "Evolutionary Optimization";
+            // 
+            // button_evoStart
+            // 
+            this.button_evoStart.Enabled = false;
+            this.button_evoStart.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
+            this.button_evoStart.Location = new System.Drawing.Point(221, 122);
+            this.button_evoStart.Name = "button_evoStart";
+            this.button_evoStart.Size = new System.Drawing.Size(63, 23);
+            this.button_evoStart.TabIndex = 15;
+            this.button_evoStart.Text = "start";
+            this.button_evoStart.UseVisualStyleBackColor = true;
+            this.button_evoStart.Click += new System.EventHandler(this.button_evoStart_Click);
+            // 
+            // cb_evoStrategy
+            // 
+            this.cb_evoStrategy.FormattingEnabled = true;
+            this.cb_evoStrategy.Items.AddRange(new object[] {
+            "μ+λ",
+            "μ, λ"});
+            this.cb_evoStrategy.Location = new System.Drawing.Point(90, 122);
+            this.cb_evoStrategy.Name = "cb_evoStrategy";
+            this.cb_evoStrategy.Size = new System.Drawing.Size(61, 23);
+            this.cb_evoStrategy.TabIndex = 15;
+            // 
+            // ui_bombSize
+            // 
+            this.ui_bombSize.Location = new System.Drawing.Point(186, 96);
+            this.ui_bombSize.Name = "ui_bombSize";
+            this.ui_bombSize.Size = new System.Drawing.Size(41, 21);
+            this.ui_bombSize.TabIndex = 23;
+            // 
+            // ui_generations
+            // 
+            this.ui_generations.Location = new System.Drawing.Point(186, 72);
+            this.ui_generations.Name = "ui_generations";
+            this.ui_generations.Size = new System.Drawing.Size(41, 21);
+            this.ui_generations.TabIndex = 22;
+            // 
+            // ui_popGrowth
+            // 
+            this.ui_popGrowth.Location = new System.Drawing.Point(186, 48);
+            this.ui_popGrowth.Name = "ui_popGrowth";
+            this.ui_popGrowth.Size = new System.Drawing.Size(41, 21);
+            this.ui_popGrowth.TabIndex = 21;
+            // 
+            // ui_popSize
+            // 
+            this.ui_popSize.Location = new System.Drawing.Point(186, 23);
+            this.ui_popSize.Name = "ui_popSize";
+            this.ui_popSize.Size = new System.Drawing.Size(41, 21);
+            this.ui_popSize.TabIndex = 15;
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.25F);
+            this.label16.Location = new System.Drawing.Point(8, 129);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(58, 16);
+            this.label16.TabIndex = 20;
+            this.label16.Text = "Strategy";
+            // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
+            this.label15.Location = new System.Drawing.Point(87, 101);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(71, 13);
+            this.label15.TabIndex = 19;
+            this.label15.Text = "(no. of points)";
+            // 
+            // label14
+            // 
+            this.label14.AutoSize = true;
+            this.label14.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.25F);
+            this.label14.Location = new System.Drawing.Point(7, 101);
+            this.label14.Name = "label14";
+            this.label14.Size = new System.Drawing.Size(73, 16);
+            this.label14.TabIndex = 18;
+            this.label14.Text = "Bomb Size";
+            // 
+            // label13
+            // 
+            this.label13.AutoSize = true;
+            this.label13.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.25F);
+            this.label13.Location = new System.Drawing.Point(5, 75);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(81, 16);
+            this.label13.TabIndex = 17;
+            this.label13.Text = "Generations";
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.25F);
+            this.label12.Location = new System.Drawing.Point(6, 51);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(135, 16);
+            this.label12.TabIndex = 16;
+            this.label12.Text = "Population Growth (λ)";
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.25F);
+            this.label11.Location = new System.Drawing.Point(6, 26);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(122, 16);
+            this.label11.TabIndex = 15;
+            this.label11.Text = "Population Size (μ) ";
+            // 
             // multipleTSP
             // 
             this.AccessibleDescription = "Layout for Main Windoq";
@@ -446,6 +621,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(772, 556);
+            this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.button_next_tour);
             this.Controls.Add(this.draw_button);
@@ -467,6 +643,8 @@
             this.groupBox2.PerformLayout();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            this.groupBox3.ResumeLayout(false);
+            this.groupBox3.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -508,6 +686,21 @@
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.Button button_insert;
+        private System.Windows.Forms.Button button_greedy;
+        private System.Windows.Forms.Button button_loclCompl;
+        private System.Windows.Forms.GroupBox groupBox3;
+        private System.Windows.Forms.ComboBox cb_evoStrategy;
+        private System.Windows.Forms.TextBox ui_bombSize;
+        private System.Windows.Forms.TextBox ui_generations;
+        private System.Windows.Forms.TextBox ui_popGrowth;
+        private System.Windows.Forms.TextBox ui_popSize;
+        private System.Windows.Forms.Label label16;
+        private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.Label label14;
+        private System.Windows.Forms.Label label13;
+        private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.Button button_evoStart;
     }
 }
 

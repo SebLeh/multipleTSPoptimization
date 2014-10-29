@@ -31,11 +31,13 @@ namespace multipleTSP
 
         evaluation evaluate = new evaluation();
 
+        evoOpt evoOptimization;
+
         public multipleTSP()
         {
             InitializeComponent();
             loclOptBox.SelectedIndex = 1;
-            loclOptBoxAll.SelectedIndex = 1;
+            loclOptBoxAll.SelectedIndex = 0;
             generateBox.SelectedIndex = 0;
             paintPanel.Paint += new PaintEventHandler(paint);
             paintPanel.Click += new EventHandler(panel_click);
@@ -200,8 +202,11 @@ namespace multipleTSP
 
         private void button_generate_Click(object sender, EventArgs e)
         {
+            button_greedy.Enabled = true;
             draw_button.Enabled = false;
             button_insert.Enabled = true;
+            button_loclCompl.Enabled = true;
+            button_evoStart.Enabled = true;
             paintPanel.Cursor = System.Windows.Forms.Cursors.Arrow;
             generate newTour = new generate();
             try
@@ -705,6 +710,89 @@ namespace multipleTSP
             }
             this.Refresh();
         }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            generate newTour = new generate();
+            newTour.allPoints = allPoints;
+            newTour.PiAllTours = PiAllTours;
+
+            if (generateBox.SelectedIndex == 1)
+            {
+                PiAllTours = newTour.greedyAlt(positionMatrix);
+            }
+            else if (generateBox.SelectedIndex == 2)
+            {
+                PiAllTours = newTour.greedyCon(positionMatrix);
+            }
+            else if (generateBox.SelectedIndex == 3)
+            {
+                PiAllTours = newTour.radial();
+            }
+
+            this.Refresh();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            bool optFound = true;
+            localOptimization localOpt = new localOptimization(allPoints, distanceMatrix, positionMatrix);
+            int[][] newTour = new int[PiAllTours.Length][];
+            for (int i = 0; i < PiAllTours.Length; i++)
+            {
+                Array.Resize(ref newTour[i], PiAllTours[i].Length);
+                Array.Copy(PiAllTours[i], newTour[i], PiAllTours[i].Length);
+            }
+
+                while (optFound)
+                {
+                    optFound = false;
+                    for (int i = 0; i < newTour.Length; i++)
+                    {
+                        newTour[i] = localOpt.tour2opt(newTour[i]);
+                    }
+                    newTour = localOpt.allORopt(newTour, 3, false);
+                    newTour = localOpt.allORopt(newTour, 2, false);
+                    newTour = localOpt.allORopt(newTour, 1, false);
+                    for (int i=0; i<PiAllTours.Length; i++)
+                    {
+                        newTour[i] = localOpt.tourORopt(newTour[i], 3);
+                        newTour[i] = localOpt.tourORopt(newTour[i], 2);
+                        newTour[i] = localOpt.tourORopt(newTour[i], 1);
+                    }
+                    if (evaluate.evalAll(newTour) < evaluate.evalAll(PiAllTours))
+                    {
+                        optFound = true;
+                        for (int i = 0; i < PiAllTours.Length; i++ )
+                        {
+                            Array.Copy(newTour[i], PiAllTours[i], newTour[i].Length);
+                        }
+                    }
+                }
+                this.Refresh();
+        }
+
+        private void button_evoStart_Click(object sender, EventArgs e)
+        {
+            int popSize = 0;
+            int popGrowth = 0;
+            int generations = 0;
+            int bombSize = 0;
+            try
+            {
+                popSize = int.Parse(ui_popSize.Text);
+                popGrowth = int.Parse(ui_popGrowth.Text);
+                generations = int.Parse(ui_generations.Text);
+                bombSize = int.Parse(ui_bombSize.Text);
+            }
+            catch (System.Exception)
+            {
+                MessageBox.Show("Please only insert positive numbers!");
+                return;
+            }
+            evoOptimization = new evoOpt(allPoints, distanceMatrix, positionMatrix);
+            evoOptimization.initPopulation(PiAllTours, popSize);
+        }
     }
 
     public class generate
@@ -761,6 +849,13 @@ namespace multipleTSP
             return randomTour;
         }
 
+        public int[][] greedyAlt(int[][] posMatrix, int startingPoint)
+        {
+            int[][] greedyTour = new int[0][];
+
+            return greedyTour;
+        }
+
         public int[][] greedyAlt(int[][] posMatrix)
         {
             int[][] greedyTour = new int[0][];
@@ -803,6 +898,13 @@ namespace multipleTSP
 
                 return greedyTour;
         }
+
+        public int[][] greedyCon(int[][] posMatrix, int startingPoint)
+        {
+            int[][] greedyTour = new int[0][];
+
+            return greedyTour;
+        }        
 
         public int[][] greedyCon(int[][] posMatrix)
         {
@@ -1321,27 +1423,39 @@ namespace multipleTSP
         private int[][][] population = new int[0][][];
         private int[][][] newGeneration = new int[0][][];
 
-        evoOpt(Point[] points, double[][] distMatrix, int[][] posMatrix)
+        generate gen = new generate();        
+
+        public evoOpt(Point[] points, double[][] distMatrix, int[][] posMatrix)
         {
-            Array.Copy(points, this.allPoints, points.Length);
+            Array.Resize(ref allPoints, points.Length);
+            Array.Copy(points, allPoints, points.Length);
+            Array.Resize(ref distanceMatrix, distMatrix.Length);
+            Array.Resize(ref positionMatrix, posMatrix.Length);
             for (int i = 0; i < distMatrix.Length; i++)
             {
+                Array.Resize(ref distanceMatrix[i], distMatrix[i].Length);
                 Array.Copy(distMatrix[i], this.distanceMatrix[i], distMatrix[i].Length);
             }
             for (int i = 0; i < posMatrix.Length; i++)
             {
+                Array.Resize(ref positionMatrix[i], posMatrix[i].Length);
                 Array.Copy(posMatrix[i], this.positionMatrix[i], posMatrix[i].Length);
             }
+
+            gen.allPoints = allPoints;
         }
 
         //private evaluation evaluate = new evaluation(allPoints, distanceMatrix);
 
         public void initPopulation(int[][] PiAllPoints, int populationSize)
         {
+            gen.PiAllTours = PiAllPoints;
+
             Array.Resize(ref population, populationSize);
             for (int i = 0; i < populationSize; i++)
             {
-                Array.Resize(ref population, PiAllPoints.Length);
+                population[i] = new int[0][];
+                Array.Resize(ref population[i], PiAllPoints.Length);
             }
 
             for (int i = 0; i < population[0].Length; i++)
@@ -1349,9 +1463,34 @@ namespace multipleTSP
                 Array.Resize(ref population[0][i], PiAllPoints[i].Length);
                 Array.Copy(PiAllPoints[i], population[0][i], PiAllPoints[i].Length);
             }
+
+            int k = 1;
+            bool alt = true;
             for (int i = 1; i < population.Length; i++)
             {
-
+                if (i == 1)
+                {
+                    population[i] = gen.greedyAlt(positionMatrix);
+                }
+                else if (i == 2)
+                {
+                    population[i] = gen.greedyCon(positionMatrix);
+                }
+                else if (i == 3)
+                {
+                    population[i] = gen.radial(); 
+                }
+                else if (alt)
+                {
+                    alt = false;
+                    population[i] = gen.greedyAlt(positionMatrix, k);
+                }
+                else if (!alt)
+                {
+                    alt = true;
+                    population[i] = gen.greedyCon(positionMatrix, k);
+                    k++;
+                }
             }
         }
 
