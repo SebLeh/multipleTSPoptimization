@@ -735,40 +735,43 @@ namespace multipleTSP
 
         private void button2_Click(object sender, EventArgs e)
         {
-            bool optFound = true;
+            //bool optFound = true;
             localOptimization localOpt = new localOptimization(allPoints, distanceMatrix, positionMatrix);
-            int[][] newTour = new int[PiAllTours.Length][];
-            for (int i = 0; i < PiAllTours.Length; i++)
-            {
-                Array.Resize(ref newTour[i], PiAllTours[i].Length);
-                Array.Copy(PiAllTours[i], newTour[i], PiAllTours[i].Length);
-            }
 
-                while (optFound)
-                {
-                    optFound = false;
-                    for (int i = 0; i < newTour.Length; i++)
-                    {
-                        newTour[i] = localOpt.tour2opt(newTour[i]);
-                    }
-                    newTour = localOpt.allORopt(newTour, 3, false);
-                    newTour = localOpt.allORopt(newTour, 2, false);
-                    newTour = localOpt.allORopt(newTour, 1, false);
-                    for (int i=0; i<PiAllTours.Length; i++)
-                    {
-                        newTour[i] = localOpt.tourORopt(newTour[i], 3);
-                        newTour[i] = localOpt.tourORopt(newTour[i], 2);
-                        newTour[i] = localOpt.tourORopt(newTour[i], 1);
-                    }
-                    if (evaluate.evalAll(newTour) < evaluate.evalAll(PiAllTours))
-                    {
-                        optFound = true;
-                        for (int i = 0; i < PiAllTours.Length; i++ )
-                        {
-                            Array.Copy(newTour[i], PiAllTours[i], newTour[i].Length);
-                        }
-                    }
-                }
+            PiAllTours = localOpt.fullyOpt(PiAllTours);
+
+            //int[][] newTour = new int[PiAllTours.Length][];
+            //for (int i = 0; i < PiAllTours.Length; i++)
+            //{
+            //    Array.Resize(ref newTour[i], PiAllTours[i].Length);
+            //    Array.Copy(PiAllTours[i], newTour[i], PiAllTours[i].Length);
+            //}
+
+            //    while (optFound)
+            //    {
+            //        optFound = false;
+            //        for (int i = 0; i < newTour.Length; i++)
+            //        {
+            //            newTour[i] = localOpt.tour2opt(newTour[i]);
+            //        }
+            //        newTour = localOpt.allORopt(newTour, 3, false);
+            //        newTour = localOpt.allORopt(newTour, 2, false);
+            //        newTour = localOpt.allORopt(newTour, 1, false);
+            //        for (int i=0; i<PiAllTours.Length; i++)
+            //        {
+            //            newTour[i] = localOpt.tourORopt(newTour[i], 3);
+            //            newTour[i] = localOpt.tourORopt(newTour[i], 2);
+            //            newTour[i] = localOpt.tourORopt(newTour[i], 1);
+            //        }
+            //        if (evaluate.evalAll(newTour) < evaluate.evalAll(PiAllTours))
+            //        {
+            //            optFound = true;
+            //            for (int i = 0; i < PiAllTours.Length; i++ )
+            //            {
+            //                Array.Copy(newTour[i], PiAllTours[i], newTour[i].Length);
+            //            }
+            //        }
+            //    }
                 this.Refresh();
         }
 
@@ -852,8 +855,60 @@ namespace multipleTSP
         public int[][] greedyAlt(int[][] posMatrix, int startingPoint)
         {
             int[][] greedyTour = new int[0][];
+            int j = 1;
 
-            return greedyTour;
+            Array.Resize(ref greedyTour, PiAllTours.Length);
+
+            for (int i = 0; i < greedyTour.Length; i++)
+            {
+                Array.Resize(ref greedyTour[i], PiAllTours[i].Length);
+                greedyTour[i][0] = PiAllTours[i][0];
+            }
+            for (int i=0; i<greedyTour.Length; i++)
+            {
+                bool Continue = true;
+                int k = 0;
+                while (Continue)
+                {
+                    Continue = false;
+                    int point = posMatrix[startingPoint][k];
+                    if (contains(greedyTour, point))
+                    {
+                        Continue = true;
+                        k++;
+                    }
+                    else
+                    {
+                        greedyTour[i][1] = point;
+                    }
+                }
+            }
+
+            while (j < PiAllTours[0].Length - 1)
+            {
+                j++;
+                for (int i = 0; i < PiAllTours.Length; i++)
+                {
+                    int k = 0;
+                    bool Continue = true;
+                    while (Continue)
+                    {
+                        int point = posMatrix[greedyTour[i][j - 1]][k];
+                        Continue = false;
+                        if (contains(greedyTour, point))
+                        {
+                            Continue = true;
+                            k++;
+                        }
+                        else
+                        {
+                            greedyTour[i][j] = point;
+                        }
+                    }
+                }
+            }
+
+                return greedyTour;
         }
 
         public int[][] greedyAlt(int[][] posMatrix)
@@ -901,9 +956,58 @@ namespace multipleTSP
 
         public int[][] greedyCon(int[][] posMatrix, int startingPoint)
         {
-            int[][] greedyTour = new int[0][];
+            int[][] greedyTour = new int[PiAllTours.Length][];
 
-            return greedyTour;
+            for (int i = 0; i < greedyTour.Length; i++)
+            {
+                Array.Resize(ref greedyTour[i], PiAllTours[i].Length);
+                greedyTour[i][0] = PiAllTours[i][0];
+            }
+            for (int i = 0; i < greedyTour.Length; i++)
+            {
+                bool Continue = true;
+                int k = 0;
+                while (Continue)
+                {
+                    Continue = false;
+                    int point = posMatrix[startingPoint][k];
+                    if (contains(greedyTour, point))
+                    {
+                        Continue = true;
+                        k++;
+                    }
+                    else
+                    {
+                        greedyTour[i][1] = point;
+                    }
+                }
+            }
+
+            for (int i = 0; i < PiAllTours.Length; i++)
+            {
+                for (int j = 2; j < PiAllTours[i].Length; j++)
+                {
+                    int k = 0;
+                    bool Continue = true;
+                    while (Continue)
+                    {
+                        Continue = false;
+                        int point = posMatrix[greedyTour[i][j - 1]][k];
+                        if (contains(greedyTour, point))
+                        {
+                            Continue = true;
+                            k++;
+                        }
+                        else
+                        {
+                            greedyTour[i][j] = point;
+                        }
+
+                    }
+                }
+            }
+
+                return greedyTour;
         }        
 
         public int[][] greedyCon(int[][] posMatrix)
@@ -1412,6 +1516,45 @@ namespace multipleTSP
             }
             return false;
         }
+
+        public int[][] fullyOpt(int[][] PiAllTours)
+        {
+            bool optFound = true;
+            //localOptimization localOpt = new localOptimization(allPoints, distanceMatrix, positionMatrix);
+            int[][] newTour = new int[PiAllTours.Length][];
+            for (int i = 0; i < PiAllTours.Length; i++)
+            {
+                Array.Resize(ref newTour[i], PiAllTours[i].Length);
+                Array.Copy(PiAllTours[i], newTour[i], PiAllTours[i].Length);
+            }
+
+            while (optFound)
+            {
+                optFound = false;
+                for (int i = 0; i < newTour.Length; i++)
+                {
+                    newTour[i] = tour2opt(newTour[i]);
+                }
+                newTour = allORopt(newTour, 3, false);
+                newTour = allORopt(newTour, 2, false);
+                newTour = allORopt(newTour, 1, false);
+                for (int i = 0; i < PiAllTours.Length; i++)
+                {
+                    newTour[i] = tourORopt(newTour[i], 3);
+                    newTour[i] = tourORopt(newTour[i], 2);
+                    newTour[i] = tourORopt(newTour[i], 1);
+                }
+                if (evaluate.evalAll(newTour) < evaluate.evalAll(PiAllTours))
+                {
+                    optFound = true;
+                    for (int i = 0; i < PiAllTours.Length; i++)
+                    {
+                        Array.Copy(newTour[i], PiAllTours[i], newTour[i].Length);
+                    }
+                }
+            }
+            return newTour;
+        }
     }
 
     public class evoOpt
@@ -1491,6 +1634,14 @@ namespace multipleTSP
                     population[i] = gen.greedyCon(positionMatrix, k);
                     k++;
                 }
+            }
+        }
+
+        public void localOptPop()
+        {
+            for (int i = 0; i < population.Length; i++)
+            {
+
             }
         }
 
