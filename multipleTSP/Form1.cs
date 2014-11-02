@@ -795,6 +795,7 @@ namespace multipleTSP
             }
             evoOptimization = new evoOpt(allPoints, distanceMatrix, positionMatrix);
             evoOptimization.initPopulation(PiAllTours, popSize);
+            evoOptimization.evoRun(popGrowth, cb_evoStrategy.SelectedIndex, bombSize, generations);
         }
     }
 
@@ -1566,6 +1567,8 @@ namespace multipleTSP
         private int[][][] population = new int[0][][];
         private int[][][] newGeneration = new int[0][][];
 
+        private int[] removedPoints = new int[0];
+
         generate gen = new generate();        
 
         public evoOpt(Point[] points, double[][] distMatrix, int[][] posMatrix)
@@ -1635,20 +1638,185 @@ namespace multipleTSP
                     k++;
                 }
             }
+            localOptPop();      //make a complete run of local optimization algorithms for each individual
         }
 
         public void localOptPop()
         {
+            localOptimization localOpt = new localOptimization(allPoints, distanceMatrix, positionMatrix);
             for (int i = 0; i < population.Length; i++)
             {
-
+                population[i] = localOpt.fullyOpt(population[i]);
             }
         }
 
         public int[][] bomb(int[][] PiAllTours, int bombSize)
         {
+            int[] initialSizes = new int[PiAllTours.Length];
+            Random bombRandom = new Random();
+            int bombSpot = 0;
 
-            return PiAllTours;
+            for (int i = 0; i < PiAllTours.Length; i++)
+            {
+                initialSizes[i] = PiAllTours[i].Length;
+            }
+
+            bombSpot = bombRandom.Next(0, allPoints.Length - 1);
+            PiAllTours = remove(PiAllTours, bombSpot);
+
+            for (int i = 0; i < bombSize; i++)
+            {
+                PiAllTours = remove(PiAllTours, positionMatrix[bombSpot][i]);
+            }
+
+            PiAllTours = reconnect(PiAllTours, initialSizes, removedPoints);
+
+                return PiAllTours;
+        }
+
+        public void evoRun(int populationGrowth, int strategy, int bombSize, int runs)
+        {
+            //strategy can take the values 0 and 1 (comboBox index)
+            //0 stands for "[my] + [lambda]"    -> don't discard parents
+            //1 stands for "[my], [lambda]"     -> discard parents            
+            int[] childsPerParent = new int[population.Length];
+            int size = populationGrowth / population.Length;
+            int rest = populationGrowth % population.Length;
+            for (int i = 0; i < population.Length; i++)
+            {
+                childsPerParent[i] = size;
+            }
+
+            if (runs == 0)
+            {
+                // number of runs is needed
+                return;
+            }
+
+            if (bombSize > allPoints.Length - 1)
+            {
+                MessageBox.Show("Bomb Size is greater than (or equal to) the number of Points");
+                return;
+            }
+
+            for (int i=0; i< rest; i++)
+            {
+                childsPerParent[i]++;
+            }
+
+
+            if (strategy != 0 && strategy != 1)
+            {
+                MessageBox.Show("Please chose a strategy for Optimization");
+                return;
+            }
+            else if (strategy == 0)
+            {
+                int i = 0;
+                int k = 0;
+                Array.Resize(ref newGeneration, populationGrowth);
+                while (k < childsPerParent.Length)
+                {
+                    for (int j = 0; j < childsPerParent[k]; j++)
+                    {
+                        newGeneration[i] = bomb(population[k], bombSize);
+                        i++;
+                    }
+                    k++;
+                }
+
+            }
+            else if (strategy == 1)
+            {
+
+            }
+        }
+
+        private int[][] remove(int[][] PiAllTours, int point)
+        {
+            int[][] newTour = new int[PiAllTours.Length][];
+            for (int i = 0; i < PiAllTours.Length; i++)
+            {
+                Array.Resize(ref newTour[i], PiAllTours[i].Length);
+                Array.Copy(PiAllTours[i], newTour[i], PiAllTours[i].Length);
+            }
+
+            bool loopBreak = false;
+            for (int i = 0; i < PiAllTours.Length; i++)
+            {
+                if (loopBreak)
+                {
+                    break;
+                }
+                for (int j = 0; j < PiAllTours[i].Length; j++)
+                {
+                    if (PiAllTours[i][j] == point)
+                    {
+                        int[] temp = new int[newTour[i].Length - j - 1];
+                        Array.Resize(ref removedPoints, removedPoints.Length + 1);
+                        removedPoints[removedPoints.Length - 1] = point;
+                        Array.Copy(newTour[i], j + 1, temp, 0, temp.Length);
+                        Array.Resize(ref newTour[i], newTour[i].Length - 1);
+                        Array.Copy(temp, 0, newTour[i], j, temp.Length);
+                        loopBreak = true;
+                        break;
+                    }
+                }
+            }
+                return newTour;
+        }
+
+        private int[][] reconnect(int[][] PiAllTours, int[] initialSizes, int[] removedPoints)
+        {
+            for (int i = 0; i < removedPoints.Length; i++)
+            {
+                int j = 0;
+                bool cont = true;
+                while (cont)
+                {
+                    bool contains = false;
+                    for (int l = 0; l < PiAllTours.Length; l++)
+                    {
+                        for (int k = 0; k < PiAllTours[l].Length; k++)
+                        {
+                            if (PiAllTours[l][k] == positionMatrix[removedPoints[i]][j])
+                            {
+                                contains = true;
+
+                            }
+                        }
+                    }
+                        if (!contains)
+                        {
+                            j++;
+                        }
+                }
+            }
+                return PiAllTours;
+        }
+
+        private bool contains(int[][] PiAllTours, int point)
+        {
+            for (int i = 0; i < PiAllTours.Length; i++)
+            {
+                if (singleContains(PiAllTours[i], point))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private bool singleContains(int[] points, int point)
+        {
+            for (int i = 0; i < points.Length; i++ )
+            {
+                if (points[i] == point)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 
