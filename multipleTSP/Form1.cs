@@ -23,9 +23,19 @@ namespace multipleTSP
         double gv_totalLength = 0;
         double gv_avgLength = 0;
 
+        double insertPercentage = 0;
+
+        int popSize = 0;
+        int popGrowth = 0;
+        int generations = 0;
+        int bombSize = 0;
+
         int[][] positionMatrix = new int[0][];
         Point[] allPoints = new Point[1];
         double[][] distanceMatrix = new double[0][];
+
+        double[] bestIndividuals = new double[0];
+        double[] worstIndividuals = new double[0];
 
         Boolean drawMode = false;
 
@@ -212,61 +222,81 @@ namespace multipleTSP
             try
             {
                 gv_points = int.Parse(gui_points.Text);
-                gv_tours = int.Parse(gui_tours.Text);
+                gv_tours = int.Parse(gui_tours.Text);                
             }
-            catch (Exception)
+            catch (SystemException)
             {
-                //gv_cities = 0;
-                //gv_workers = 0;
                 MessageBox.Show("Please only insert positive Numbers!");
                 return;
             }
-            //finally
-            //{
-                if (gv_points <= 0 | gv_tours <= 0)
+            if (gv_tours <= 0 || gv_points <= 0)
+            {
+                MessageBox.Show("Please only insert positive Numbers!");
+                return;
+            }
+
+            if (gv_tours > gv_points)
+            {
+                MessageBox.Show("Numbers of Points should be higher or equal to the number of Tours");
+                return;
+            }
+            else
+            {
+
+                //allTours = initialization.path(gv_points, gv_tours, paintPanel.Width, paintPanel.Height);
+
+                gv_totalLength = 0;
+                gv_avgLength = 0;
+                //localGo.Enabled = true;
+                //evoGo.Enabled = true;
+                allTours = newTour.random(gv_points, gv_tours, new Point(paintPanel.Width, paintPanel.Height), mid);
+                allPoints = newTour.allPoints;
+                PiAllTours = newTour.PiAllTours;
+                evaluate.allPoints = allPoints;
+                this.initMatrixes();
+                evaluate.distanceMatrix = distanceMatrix;
+
+                if (generateBox.SelectedIndex == 1)
                 {
-                    MessageBox.Show("Please only insert positive Numbers!");
+                    PiAllTours = newTour.greedyAlt(positionMatrix);
+                }
+                else if (generateBox.SelectedIndex == 2)
+                {
+                    PiAllTours = newTour.greedyCon(positionMatrix);
+                }
+                else if (generateBox.SelectedIndex == 3)
+                {
+                    PiAllTours = newTour.radial();
                 }
 
-                else if (gv_tours > gv_points)
-                {
-                    MessageBox.Show("Numbers of Points should be higher or equal to the number of Tours");
-                }
-                else
-                {
-
-                    //allTours = initialization.path(gv_points, gv_tours, paintPanel.Width, paintPanel.Height);
-
-                    gv_totalLength = 0;
-                    gv_avgLength = 0;
-                    //localGo.Enabled = true;
-                    //evoGo.Enabled = true;
-                    allTours = newTour.random(gv_points, gv_tours, new Point(paintPanel.Width, paintPanel.Height), mid);
-                    allPoints = newTour.allPoints;
-                    PiAllTours = newTour.PiAllTours;
-                    evaluate.allPoints = allPoints;
-                    this.initMatrixes();
-                    evaluate.distanceMatrix = distanceMatrix;
-
-                    if (generateBox.SelectedIndex == 1)
-                    {
-                        PiAllTours = newTour.greedyAlt(positionMatrix);
-                    }
-                    else if (generateBox.SelectedIndex == 2)
-                    {
-                        PiAllTours = newTour.greedyCon(positionMatrix);
-                    }
-                    else if (generateBox.SelectedIndex == 3)
-                    {
-                        PiAllTours = newTour.radial();
-                    }
-
-                    this.Refresh();
-                }
-                button_localOpt.Enabled = true;
+                this.Refresh();
+            }
+            button_localOpt.Enabled = true;
             //}
-
         }
+
+        //private bool validInput()
+        //{
+        //    try
+        //    {
+        //        gv_points = int.Parse(gui_points.Text);
+        //        gv_tours = int.Parse(gui_tours.Text);
+        //        insertPercentage = double.Parse(tb_insert_percent.Text);
+        //        popSize = int.Parse(ui_popSize.Text);
+        //        popGrowth = int.Parse(ui_popGrowth.Text);
+        //        generations = int.Parse(ui_generations.Text);
+        //        bombSize = int.Parse(ui_bombSize.Text);
+        //    }
+        //    catch (Exception)
+        //    {
+        //        //gv_cities = 0;
+        //        //gv_workers = 0;
+        //        MessageBox.Show("Please only insert positive Numbers!");
+        //        return false;
+        //    }
+
+        //    return true;
+        //}
 
         private void oPENToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -666,13 +696,12 @@ namespace multipleTSP
 
         private void button_insert_Click(object sender, EventArgs e)
         {
-            double percentage = 0;
             bool optFound = true;
             int[][] newTours = new int[PiAllTours.Length][];
             localOptimization loclOpt = new localOptimization(allPoints, distanceMatrix, positionMatrix);
             try
             {
-                percentage = double.Parse(tb_insert_percent.Text);
+                insertPercentage = double.Parse(tb_insert_percent.Text);
             }
 
             catch (System.Exception)
@@ -680,7 +709,6 @@ namespace multipleTSP
                 MessageBox.Show("Please only insert positive numbers");
                 return;
             }
-
             while (optFound)
             {
                 optFound = false;
@@ -690,7 +718,7 @@ namespace multipleTSP
                     {
                         if (i != j)
                         {
-                            newTours = loclOpt.insert(PiAllTours, i, j, percentage);
+                            newTours = loclOpt.insert(PiAllTours, i, j, insertPercentage);
                             for (int k = 0; k < PiAllTours.Length; k++)
                             {
                                 loclOpt.tour2opt(newTours[k]);
@@ -702,11 +730,11 @@ namespace multipleTSP
                                 {
                                     Array.Copy(newTours[l], PiAllTours[l], newTours[l].Length);
                                 }
-                               
+
                             }
                         }
                     }
-                }
+                }                
             }
             this.Refresh();
         }
@@ -735,52 +763,14 @@ namespace multipleTSP
 
         private void button2_Click(object sender, EventArgs e)
         {
-            //bool optFound = true;
             localOptimization localOpt = new localOptimization(allPoints, distanceMatrix, positionMatrix);
 
             PiAllTours = localOpt.fullyOpt(PiAllTours);
-
-            //int[][] newTour = new int[PiAllTours.Length][];
-            //for (int i = 0; i < PiAllTours.Length; i++)
-            //{
-            //    Array.Resize(ref newTour[i], PiAllTours[i].Length);
-            //    Array.Copy(PiAllTours[i], newTour[i], PiAllTours[i].Length);
-            //}
-
-            //    while (optFound)
-            //    {
-            //        optFound = false;
-            //        for (int i = 0; i < newTour.Length; i++)
-            //        {
-            //            newTour[i] = localOpt.tour2opt(newTour[i]);
-            //        }
-            //        newTour = localOpt.allORopt(newTour, 3, false);
-            //        newTour = localOpt.allORopt(newTour, 2, false);
-            //        newTour = localOpt.allORopt(newTour, 1, false);
-            //        for (int i=0; i<PiAllTours.Length; i++)
-            //        {
-            //            newTour[i] = localOpt.tourORopt(newTour[i], 3);
-            //            newTour[i] = localOpt.tourORopt(newTour[i], 2);
-            //            newTour[i] = localOpt.tourORopt(newTour[i], 1);
-            //        }
-            //        if (evaluate.evalAll(newTour) < evaluate.evalAll(PiAllTours))
-            //        {
-            //            optFound = true;
-            //            for (int i = 0; i < PiAllTours.Length; i++ )
-            //            {
-            //                Array.Copy(newTour[i], PiAllTours[i], newTour[i].Length);
-            //            }
-            //        }
-            //    }
-                this.Refresh();
+            this.Refresh();
         }
 
         private void button_evoStart_Click(object sender, EventArgs e)
         {
-            int popSize = 0;
-            int popGrowth = 0;
-            int generations = 0;
-            int bombSize = 0;
             try
             {
                 popSize = int.Parse(ui_popSize.Text);
@@ -793,10 +783,20 @@ namespace multipleTSP
                 MessageBox.Show("Please only insert positive numbers!");
                 return;
             }
+            if (popGrowth < popSize)
+            {
+                MessageBox.Show("Number of Offsprings (Growth) must be higher than or equal to the Population Size");
+                return;
+            }
             evoOptimization = new evoOpt(allPoints, distanceMatrix, positionMatrix);
             evoOptimization.initPopulation(PiAllTours, popSize);
             evoOptimization.evoRun(popGrowth, cb_evoStrategy.SelectedIndex, bombSize, generations);
-        }
+
+            PiAllTours = evoOptimization.getBest();
+            this.bestIndividuals = evoOptimization.bestIndividuals;
+            this.worstIndividuals = evoOptimization.worstIndividuals;
+            this.Refresh();
+            }
     }
 
     public class generate
@@ -1569,7 +1569,12 @@ namespace multipleTSP
 
         private int[] removedPoints = new int[0];
 
-        generate gen = new generate();        
+        public double[] bestIndividuals = new double[0];
+        public double[] worstIndividuals = new double[0];
+
+        generate gen = new generate();
+
+        evaluation evaluate;
 
         public evoOpt(Point[] points, double[][] distMatrix, int[][] posMatrix)
         {
@@ -1589,6 +1594,8 @@ namespace multipleTSP
             }
 
             gen.allPoints = allPoints;
+
+            evaluate = new evaluation(allPoints, distanceMatrix);
         }
 
         //private evaluation evaluate = new evaluation(allPoints, distanceMatrix);
@@ -1655,6 +1662,7 @@ namespace multipleTSP
             int[] initialSizes = new int[PiAllTours.Length];
             Random bombRandom = new Random();
             int bombSpot = 0;
+            localOptimization localOpt = new localOptimization(allPoints, distanceMatrix, positionMatrix);
 
             for (int i = 0; i < PiAllTours.Length; i++)
             {
@@ -1670,6 +1678,8 @@ namespace multipleTSP
             }
 
             PiAllTours = reconnect(PiAllTours, initialSizes, removedPoints);
+            Array.Resize(ref removedPoints, 0);
+            PiAllTours = localOpt.fullyOpt(PiAllTours);
 
                 return PiAllTours;
         }
@@ -1710,26 +1720,60 @@ namespace multipleTSP
                 MessageBox.Show("Please chose a strategy for Optimization");
                 return;
             }
-            else if (strategy == 0)
+
+            int n = 0;
+            int k = 0;
+            Array.Resize(ref newGeneration, populationGrowth);
+            for (int m = 0; m < runs; m++)
             {
-                int i = 0;
-                int k = 0;
-                Array.Resize(ref newGeneration, populationGrowth);
-                while (k < childsPerParent.Length)
+                while (k < childsPerParent.Length)                  //building offsprings
                 {
                     for (int j = 0; j < childsPerParent[k]; j++)
                     {
-                        newGeneration[i] = bomb(population[k], bombSize);
-                        i++;
+                        newGeneration[n] = bomb(population[k], bombSize);
+                        n++;
                     }
                     k++;
                 }
 
+                if (strategy == 0)       //(my + lambda)
+                {
+                    Array.Resize(ref population, population.Length + newGeneration.Length);
+                    Array.Copy(newGeneration, 0, population, population.Length - newGeneration.Length, newGeneration.Length);
+                    population = evalSort(population);
+                    Array.Resize(ref population, populationGrowth);
+                }
+                else if (strategy == 1)  //(my, lambda)
+                {
+                    newGeneration = evalSort(newGeneration);
+                    Array.Copy(newGeneration, 0, population, 0, population.Length);
+                }
+                Array.Resize(ref bestIndividuals, bestIndividuals.Length + 1);
+                bestIndividuals[bestIndividuals.Length - 1] = evaluate.evalAll(getBest());
+                Array.Resize(ref worstIndividuals, worstIndividuals.Length + 1);
+                worstIndividuals[worstIndividuals.Length - 1] = evaluate.evalAll(getBest());
             }
-            else if (strategy == 1)
+        }
+
+        private int[][][] evalSort(int[][][] pop)
+        {
+            bool cont = true;
+            while (cont)
             {
+                cont = false;
+                for (int i = 1; i < pop.Length; i++)
+                {
+                    if (evaluate.evalAll(pop[i - 1]) > evaluate.evalAll(pop[i]))
+                    {
+                        cont = true;
+                        int[][] temp = pop[i - 1];
+                        pop[i - 1] = pop[i];
+                        pop[i] = temp;
+                    }
+                }
 
             }
+            return pop;
         }
 
         private int[][] remove(int[][] PiAllTours, int point)
@@ -1774,25 +1818,52 @@ namespace multipleTSP
                 bool cont = true;
                 while (cont)
                 {
-                    bool contains = false;
+                    cont = false;
+                    bool Contains = false;
+                    bool loopbreak = false;
                     for (int l = 0; l < PiAllTours.Length; l++)
                     {
+                        if (loopbreak)
+                        {
+                            loopbreak = false;
+                            break;
+                        }
+                        //if (PiAllTours[l].Length >= initialSizes[l])
+                        //{
+                        //    //this array already has enough points
+
+                        //    break;
+                        //}
                         for (int k = 0; k < PiAllTours[l].Length; k++)
                         {
-                            if (PiAllTours[l][k] == positionMatrix[removedPoints[i]][j])
+                            if (PiAllTours[l][k] == positionMatrix[removedPoints[i]][j]) // && !contains(PiAllTours, removedPoints[i]))
                             {
-                                contains = true;
-
+                                if (PiAllTours[l].Length >= initialSizes[l])
+                                {
+                                    //contains = true;
+                                    loopbreak = true;
+                                    break;
+                                }
+                                Contains = true;
+                                int[] temp = new int[PiAllTours[l].Length - k - 1];
+                                Array.Resize(ref PiAllTours[l], PiAllTours[l].Length + 1);
+                                Array.Copy(PiAllTours[l], k + 1, temp, 0, temp.Length);
+                                PiAllTours[l][k+1] = removedPoints[i];
+                                Array.Copy(temp, 0, PiAllTours[l], k + 2, temp.Length);
+                                loopbreak = true;
+                                break;
                             }
                         }
                     }
-                        if (!contains)
-                        {
-                            j++;
-                        }
+                    if (!Contains)
+                    {
+                        cont = true;
+                        j++;
+                    }
                 }
             }
-                return PiAllTours;
+            Array.Resize(ref removedPoints, 0);
+            return PiAllTours;
         }
 
         private bool contains(int[][] PiAllTours, int point)
@@ -1817,6 +1888,22 @@ namespace multipleTSP
                 }
             }
             return false;
+        }
+
+        public int[][] getBest()
+        {
+            int[][] PiAllTours = new int[population[0].Length][];
+            population = evalSort(population);
+            PiAllTours = population[0];
+            return PiAllTours;
+        }
+
+        public int[][] getWorst()
+        {
+            int[][] PiAllTours = new int[population[0].Length][];
+            population = evalSort(population);
+            PiAllTours = population[population.Length - 1];
+            return PiAllTours;
         }
     }
 
