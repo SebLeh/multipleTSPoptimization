@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace multipleTSP
 {
@@ -36,6 +37,8 @@ namespace multipleTSP
 
         double[] bestIndividuals = new double[0];
         double[] worstIndividuals = new double[0];
+        int[] bestArray = new int[0];
+        int[] worstArray = new int[0];
 
         Boolean drawMode = false;
 
@@ -64,6 +67,8 @@ namespace multipleTSP
             allPoints[0] = mid;
             PiAllTours[0] = new int[1]{0};
 
+            this.chart1.Palette = ChartColorPalette.SeaGreen;
+            this.chart1.Titles.Add("Best and worst Individuals");
         }
 
         public void paint(object sender, PaintEventArgs e)
@@ -120,9 +125,11 @@ namespace multipleTSP
         {
             if (drawMode == true)
             {
+                //Cursor paintCursor = new System.Windows.Forms.Cursor(paintPanel);
+
                 gv_draw_point++;
                 Array.Resize(ref allTours[gv_draw_counter], allTours[gv_draw_counter].Length + 1);
-                allTours[gv_draw_counter][allTours[gv_draw_counter].Length - 1] = paintPanel.PointToClient(Cursor.Position);
+                //allTours[gv_draw_counter][allTours[gv_draw_counter].Length - 1] = paintPanel.PointToClient(Cursor.Position);
 
                 Array.Resize(ref PiAllTours[gv_draw_counter], PiAllTours[gv_draw_counter].Length + 1);  //##
                 PiAllTours[gv_draw_counter][PiAllTours[gv_draw_counter].Length - 1] = gv_draw_point;    //##
@@ -173,6 +180,11 @@ namespace multipleTSP
             allTours[0] = new Point[] { mid };
             gv_draw_counter = 0;
             gv_draw_point = 0;
+
+            Array.Resize(ref bestArray, 0);
+            Array.Resize(ref bestIndividuals, 0);
+            Array.Resize(ref worstArray, 0);
+            Array.Resize(ref worstIndividuals, 0);
 
             this.Refresh();
         }
@@ -795,8 +807,34 @@ namespace multipleTSP
             PiAllTours = evoOptimization.getBest();
             this.bestIndividuals = evoOptimization.bestIndividuals;
             this.worstIndividuals = evoOptimization.worstIndividuals;
-            this.Refresh();
+
+            this.chart1.Series.Clear();
+            //string[] bestSeries = { "Best", "Worst" };
+            int bestLength = bestArray.Length;
+            int worstLength = worstArray.Length;
+            Array.Resize(ref bestArray, bestArray.Length + bestIndividuals.Length);
+            Array.Resize(ref worstArray, worstArray.Length + worstIndividuals.Length);
+            for (int i = 0; i < bestIndividuals.Length; i++)
+            {
+                bestArray[bestLength + i] = Convert.ToInt32(bestIndividuals[i]);
             }
+            for (int i = 0; i < worstIndividuals.Length; i++)
+            {
+                worstArray[worstLength + i] = Convert.ToInt32(worstIndividuals[i]);
+            }
+            Series best = this.chart1.Series.Add("Best");
+            for (int i = 0; i < bestArray.Length; i++)
+            {
+                best.Points.Add(bestArray[i]);
+            }
+            Series worst = this.chart1.Series.Add("Worst");
+            for (int i = 0; i < worstArray.Length; i++)
+            {
+                worst.Points.Add(worstArray[i]);
+            }
+                this.Refresh();
+            }
+        
     }
 
     public class generate
@@ -1629,10 +1667,10 @@ namespace multipleTSP
                 {
                     population[i] = gen.greedyCon(positionMatrix);
                 }
-                else if (i == 3)
-                {
-                    population[i] = gen.radial(); 
-                }
+                //else if (i == 3)
+                //{
+                //    population[i] = gen.radial(); 
+                //}
                 else if (alt)
                 {
                     alt = false;
@@ -1735,6 +1773,8 @@ namespace multipleTSP
                     }
                     k++;
                 }
+                k = 0;
+                n = 0;
 
                 if (strategy == 0)       //(my + lambda)
                 {
@@ -1792,7 +1832,7 @@ namespace multipleTSP
                 {
                     break;
                 }
-                for (int j = 0; j < PiAllTours[i].Length; j++)
+                for (int j = 1; j < PiAllTours[i].Length; j++)
                 {
                     if (PiAllTours[i][j] == point)
                     {
