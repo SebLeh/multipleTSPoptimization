@@ -68,7 +68,7 @@ namespace multipleTSP
             PiAllTours[0] = new int[1]{0};
 
             this.chart1.Palette = ChartColorPalette.SeaGreen;
-            this.chart1.Titles.Add("Best and worst Individuals");
+            this.chart1.Titles.Add("Improvement of best and worst Individuals");
         }
 
         public void paint(object sender, PaintEventArgs e)
@@ -287,28 +287,6 @@ namespace multipleTSP
             //}
         }
 
-        //private bool validInput()
-        //{
-        //    try
-        //    {
-        //        gv_points = int.Parse(gui_points.Text);
-        //        gv_tours = int.Parse(gui_tours.Text);
-        //        insertPercentage = double.Parse(tb_insert_percent.Text);
-        //        popSize = int.Parse(ui_popSize.Text);
-        //        popGrowth = int.Parse(ui_popGrowth.Text);
-        //        generations = int.Parse(ui_generations.Text);
-        //        bombSize = int.Parse(ui_bombSize.Text);
-        //    }
-        //    catch (Exception)
-        //    {
-        //        //gv_cities = 0;
-        //        //gv_workers = 0;
-        //        MessageBox.Show("Please only insert positive Numbers!");
-        //        return false;
-        //    }
-
-        //    return true;
-        //}
 
         private void oPENToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -537,8 +515,8 @@ namespace multipleTSP
             gv_draw_counter++;
             Array.Resize(ref allTours, allTours.Length + 1);
             allTours[gv_draw_counter] = new Point[] { mid };
-            Array.Resize(ref PiAllTours, PiAllTours.Length + 1);                //##
-            PiAllTours[PiAllTours.Length - 1] = new int[] { 0 };                //##
+            Array.Resize(ref PiAllTours, PiAllTours.Length + 1);
+            PiAllTours[PiAllTours.Length - 1] = new int[] { 0 };
             gv_tours = gv_draw_counter + 1;
 
         }
@@ -800,6 +778,7 @@ namespace multipleTSP
                 MessageBox.Show("Number of Offsprings (Growth) must be higher than or equal to the Population Size");
                 return;
             }
+            double initialLength = gv_totalLength;
             evoOptimization = new evoOpt(allPoints, distanceMatrix, positionMatrix);
             evoOptimization.initPopulation(PiAllTours, popSize);
             evoOptimization.evoRun(popGrowth, cb_evoStrategy.SelectedIndex, bombSize, generations);
@@ -807,20 +786,22 @@ namespace multipleTSP
             PiAllTours = evoOptimization.getBest();
             this.bestIndividuals = evoOptimization.bestIndividuals;
             this.worstIndividuals = evoOptimization.worstIndividuals;
-
+            
             this.chart1.Series.Clear();
             //string[] bestSeries = { "Best", "Worst" };
             int bestLength = bestArray.Length;
             int worstLength = worstArray.Length;
             Array.Resize(ref bestArray, bestArray.Length + bestIndividuals.Length);
             Array.Resize(ref worstArray, worstArray.Length + worstIndividuals.Length);
-            for (int i = 0; i < bestIndividuals.Length; i++)
+            bestIndividuals[0] = initialLength;
+            worstIndividuals[0] = initialLength;
+            for (int i = 1; i < bestIndividuals.Length; i++)
             {
-                bestArray[bestLength + i] = Convert.ToInt32(bestIndividuals[i]);
+                bestArray[bestLength + i] = Convert.ToInt32(bestIndividuals[i - 1] - bestIndividuals[i]);
             }
-            for (int i = 0; i < worstIndividuals.Length; i++)
+            for (int i = 1; i < worstIndividuals.Length; i++)
             {
-                worstArray[worstLength + i] = Convert.ToInt32(worstIndividuals[i]);
+                worstArray[worstLength + i] = Convert.ToInt32(worstIndividuals[i - 1] - worstIndividuals[i]);
             }
             Series best = this.chart1.Series.Add("Best");
             for (int i = 0; i < bestArray.Length; i++)
@@ -1667,10 +1648,10 @@ namespace multipleTSP
                 {
                     population[i] = gen.greedyCon(positionMatrix);
                 }
-                //else if (i == 3)
-                //{
-                //    population[i] = gen.radial(); 
-                //}
+                else if (i == 3)
+                {
+                    population[i] = gen.radial();
+                }
                 else if (alt)
                 {
                     alt = false;
@@ -1791,7 +1772,7 @@ namespace multipleTSP
                 Array.Resize(ref bestIndividuals, bestIndividuals.Length + 1);
                 bestIndividuals[bestIndividuals.Length - 1] = evaluate.evalAll(getBest());
                 Array.Resize(ref worstIndividuals, worstIndividuals.Length + 1);
-                worstIndividuals[worstIndividuals.Length - 1] = evaluate.evalAll(getBest());
+                worstIndividuals[worstIndividuals.Length - 1] = evaluate.evalAll(getWorst());
             }
         }
 
