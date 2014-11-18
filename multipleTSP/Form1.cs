@@ -83,20 +83,63 @@ namespace multipleTSP
             Brush blackBrush = new SolidBrush(Color.Black);
             Pen bluePen = new Pen(Color.Blue);
 
+            Pen[] pens = new Pen[PiAllTours.Length];
+
             //evaluation evaluate = new evaluation(allPoints, distanceMatrix);
             evaluate.allPoints = allPoints;
             evaluate.distanceMatrix = distanceMatrix;
 
-            g.FillEllipse(redBrush, mid.X - 2, mid.Y - 2, 5, 5);
+            g.FillEllipse(blackBrush, mid.X - 2, mid.Y - 2, 5, 5);
 
-            //for (int i = 0; i < allTours.Length; i++)
-            //{
-            //    if (allTours[i].Length > 1)
-            //    {
-            //        g.DrawPolygon(blackPen, allTours[i]);
-            //    }
-            //}
-            //gv_totalLength = evaluate.evalAll(allTours);
+            if (PiAllTours.Length < 10)
+            {
+                pens[0] = blackPen;
+                if (PiAllTours.Length > 1)
+                {
+                    pens[1] = bluePen;
+
+                }
+                if (PiAllTours.Length > 2)
+                {
+                    pens[2] = new Pen(Color.Red);
+                }
+                if (PiAllTours.Length > 3)
+                {
+                    pens[3] = new Pen(Color.Green);
+                }
+                if (PiAllTours.Length > 4)
+                {
+                    pens[4] = new Pen(Color.Yellow);
+                }
+                if (PiAllTours.Length > 5)
+                {
+                    pens[5] = new Pen(Color.Pink);
+                }
+                if (PiAllTours.Length > 6)
+                {
+                    pens[6] = new Pen(Color.Violet);
+                }
+                if (PiAllTours.Length > 7)
+                {
+                    pens[7] = new Pen(Color.Cyan);
+                }
+                if (PiAllTours.Length > 8)
+                {
+                    pens[8] = new Pen(Color.LightGreen);
+                } 
+                if (PiAllTours.Length > 9)
+                {
+                    pens[9] = new Pen(Color.Brown);
+                }
+
+            }
+            else
+            {
+                for (int i = 0; i < PiAllTours.Length; i++)
+                {
+                    pens[i] = blackPen;
+                }
+            }
 
             for (int i = 0; i < PiAllTours.Length; i++)
             {
@@ -104,9 +147,9 @@ namespace multipleTSP
                 {
                     for (int j = 1; j < PiAllTours[i].Length; j++)
                     {
-                        g.DrawLine(blackPen, allPoints[PiAllTours[i][j - 1]], allPoints[PiAllTours[i][j]]);
+                        g.DrawLine(pens[i], allPoints[PiAllTours[i][j - 1]], allPoints[PiAllTours[i][j]]);
                     }
-                    g.DrawLine(blackPen, allPoints[PiAllTours[i][PiAllTours[i].Length - 1]], mid);
+                    g.DrawLine(pens[i], allPoints[PiAllTours[i][PiAllTours[i].Length - 1]], mid);
                 }
             }
 
@@ -813,9 +856,8 @@ namespace multipleTSP
             {
                 worst.Points.Add(worstArray[i]);
             }
-                this.Refresh();
-            }
-        
+            this.Refresh();
+        }        
     }
 
     public class generate
